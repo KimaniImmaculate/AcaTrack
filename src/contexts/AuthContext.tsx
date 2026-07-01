@@ -1,50 +1,61 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../services/firebase";
 
 /**
- * TYPE: defines what our auth context provides
- * - user: current logged-in Firebase user (or null)
- * - loading: whether Firebase is still checking auth state
+ * TYPE: what the auth system provides globally
  */
 type AuthContextType = {
     user: User | null;
     loading: boolean;
+    role: string | null;
 };
 
 /**
- * CREATE CONTEXT
- * Default values used only before Firebase initializes
+ * CREATE CONTEXT (default fallback values)
  */
 const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
+    role: null,
 });
 
 /**
- * PROVIDER COMPONENT
- * Wraps the entire app so all components can access auth state
+ * AUTH PROVIDER
+ * Wraps the entire app and provides auth + role state
  */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {
-        /**
-         * LISTEN TO AUTH CHANGES
-         * Firebase automatically tells us when user logs in/out
-         */
-        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             setUser(firebaseUser);
+
+            if (firebaseUser) {
+                // fetch role from Firestore
+                const docRef = doc(db, "users", firebaseUser.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    setRole(docSnap.data().role);
+                } else {
+                    setRole(null);
+                }
+            } else {
+                setRole(null);
+            }
+
             setLoading(false);
         });
 
-        // cleanup listener on unmount
         return () => unsubscribe();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading }}>
+        <AuthContext.Provider value={{ user, loading, role }}>
             {children}
         </AuthContext.Provider>
     );
@@ -52,6 +63,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 /**
  * CUSTOM HOOK
- * Makes it easy to access auth state anywhere in the app
+ * Used anywhere in the app to access auth state
  */
 export const useAuth = () => useContext(AuthContext);

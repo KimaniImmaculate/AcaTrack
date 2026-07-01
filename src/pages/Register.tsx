@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../services/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
 
 /**
  * REGISTER PAGE
@@ -25,12 +27,29 @@ export default function Register() {
         setError("");
 
         try {
-            // Firebase creates user account
-            await createUserWithEmailAndPassword(auth, email, password);
+            /**
+             * 1. Create user in Firebase Auth
+             */
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
+            const user = userCredential.user;
+
+            /**
+             * 2. Save user role in Firestore
+             * Default role = student
+             */
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                role: "student",
+                createdAt: new Date()
+            });
 
             alert("Account created successfully!");
         } catch (err: any) {
-            // show Firebase error message
             setError(err.message);
         } finally {
             setLoading(false);
