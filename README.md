@@ -1,16 +1,29 @@
-# React + Vite
+#  AcaTrack – Digital Research Proposal Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AcaTrack is a web-based platform that automates the submission, review, approval, and tracking of research proposals in universities and research institutions.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+##  Features
 
-## React Compiler
+- Student proposal submission and tracking  
+- Supervisor review, feedback, and approval workflow  
+- Admin dashboard for managing users, departments, and reports  
+- Role-based access (Student, Supervisor, Admin)  
+- File uploads for research documents  
+- Real-time status updates (Draft → Review → Approved/Rejected)  
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+##  Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React + TypeScript + Vite  
+- Tailwind CSS  
+- Firebase (Authentication, Firestore, Storage)  
+- React Router  
+
+---
+
+##  Goal
+
+To streamline and digitize the research proposal lifecycle, improving transparency, efficiency, and collaboration in academic institutions.
