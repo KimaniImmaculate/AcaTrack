@@ -2,7 +2,7 @@
 
 AcaTrack is a web-based platform that automates the submission, review, approval, and tracking of research proposals in universities and research institutions.
 
----
+
 
 ##  Features
 
@@ -13,7 +13,7 @@ AcaTrack is a web-based platform that automates the submission, review, approval
 - File uploads for research documents  
 - Real-time status updates (Draft → Review → Approved/Rejected)  
 
----
+
 
 ##  Tech Stack
 
@@ -22,7 +22,7 @@ AcaTrack is a web-based platform that automates the submission, review, approval
 - Firebase (Authentication, Firestore, Storage)  
 - React Router  
 
----
+
 
 ##  Goal
 
