@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import NewProposal from "./pages/student/NewProposal";
+import Proposals from "./pages/student/Proposals";
+import ProposalDetail from "./pages/student/ProposalDetail";
 
 // Role-protected wrapper component
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -72,6 +74,22 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["student"]}>
               <NewProposal />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/proposals"
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <Proposals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/proposals/:id"
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <ProposalDetail />
             </ProtectedRoute>
           }
         />

@@ -1,66 +1,56 @@
 import { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+
 import { db } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 
-/**
- * NEW PROPOSAL PAGE
- * ------------------
- * Allows students to create and submit research proposals
- */
 export default function NewProposal() {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
-    // form state
     const [title, setTitle] = useState("");
     const [abstract, setAbstract] = useState("");
     const [loading, setLoading] = useState(false);
 
-    /**
-     * SUBMIT PROPOSAL
-     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
+
         setLoading(true);
 
         try {
             await addDoc(collection(db, "proposals"), {
                 title,
                 abstract,
-                status: "submitted", // initial status
-                studentId: user?.uid,
-                createdAt: new Date()
+                status: "draft",
+                studentId: user.uid,
+                version: 1,
+                supervisorId: null,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
             });
 
-            alert("Proposal submitted successfully!");
+            navigate("/student/proposals");
 
-            // reset form
-            setTitle("");
-            setAbstract("");
-        } catch (err) {
-            console.error(err);
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     return (
         <div className="p-6 max-w-xl mx-auto">
-            <h1 className="text-xl font-bold mb-4">
-                Create New Proposal
-            </h1>
+            <h1 className="text-xl font-bold mb-4">New Proposal</h1>
 
             <form onSubmit={handleSubmit} className="space-y-3">
 
-                {/* Title */}
                 <input
                     className="border p-2 w-full"
-                    placeholder="Research Title"
+                    placeholder="Title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
 
-                {/* Abstract */}
                 <textarea
                     className="border p-2 w-full"
                     placeholder="Abstract"
@@ -68,13 +58,13 @@ export default function NewProposal() {
                     onChange={(e) => setAbstract(e.target.value)}
                 />
 
-                {/* Submit button */}
                 <button
                     disabled={loading}
                     className="bg-blue-600 text-white px-4 py-2"
                 >
-                    {loading ? "Submitting..." : "Submit Proposal"}
+                    {loading ? "Saving..." : "Save Draft"}
                 </button>
+
             </form>
         </div>
     );
