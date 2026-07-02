@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../services/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 /**
- * LOGIN PAGE
- * Handles user authentication using Firebase email/password
+ * REGISTER PAGE
+ * - Creates a new user in Firebase Authentication
+ * - Automatically logs them in after signup
  */
-export default function Login() {
+export default function Register() {
+    const navigate = useNavigate();
     // form state
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -16,18 +20,36 @@ export default function Login() {
     const [error, setError] = useState("");
 
     /**
-     * HANDLE LOGIN
+     * HANDLE REGISTER
      */
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
-            // Firebase login request
-            await signInWithEmailAndPassword(auth, email, password);
+            /**
+             * 1. Create user in Firebase Auth
+             */
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
 
-            alert("Login successful!");
+            const user = userCredential.user;
+
+            /**
+             * 2. Save user role in Firestore
+             * Default role = student
+             */
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                role: "student",
+                createdAt: new Date()
+            });
+            navigate("/student");
+
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -39,10 +61,10 @@ export default function Login() {
         <div className="min-h-screen flex items-center justify-center">
 
             <form
-                onSubmit={handleLogin}
+                onSubmit={handleRegister}
                 className="w-80 p-6 bg-white shadow rounded"
             >
-                <h1 className="text-xl font-bold mb-4">Login</h1>
+                <h1 className="text-xl font-bold mb-4">Register</h1>
 
                 {/* Email input */}
                 <input
@@ -62,7 +84,7 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
-                {/* Error display */}
+                {/* Error message */}
                 {error && (
                     <p className="text-red-500 text-sm mb-2">
                         {error}
@@ -73,9 +95,9 @@ export default function Login() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 text-white p-2"
+                    className="w-full bg-green-600 text-white p-2"
                 >
-                    {loading ? "Logging in..." : "Login"}
+                    {loading ? "Creating account..." : "Register"}
                 </button>
             </form>
         </div>

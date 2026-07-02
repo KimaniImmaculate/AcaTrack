@@ -1,4 +1,7 @@
 import StatCard from "../../components/dashboard/StatCard";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../../services/firebase";
 
 /**
  * STUDENT DASHBOARD
@@ -9,17 +12,45 @@ import StatCard from "../../components/dashboard/StatCard";
  * Later, they will come from Firestore.
  */
 export default function StudentDashboard() {
+    // Used to navigate between pages
+    const navigate = useNavigate();
+
+    /**
+     * HANDLE LOGOUT
+     * -------------
+     * Signs the current user out of Firebase
+     * and redirects them back to the login page.
+     */
+    const handleLogout = async () => {
+        await signOut(auth);
+        navigate("/login");
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 p-8">
 
-            {/* Page title */}
-            <h1 className="text-3xl font-bold text-blue-600">
-                Welcome back 👋
-            </h1>
+            {/* Header */}
+            <div className="flex items-center justify-between">
 
-            <p className="mt-2 text-gray-600">
-                Manage your research proposals from one place.
-            </p>
+                <div>
+                    <h1 className="text-3xl font-bold text-blue-600">
+                        Welcome back 👋
+                    </h1>
+
+                    <p className="mt-2 text-gray-600">
+                        Manage your research proposals from one place.
+                    </p>
+                </div>
+
+                {/* Logout Button */}
+                <button
+                    onClick={handleLogout}
+                    className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+                >
+                    Logout
+                </button>
+
+            </div>
 
             {/* Statistics */}
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -46,7 +77,7 @@ export default function StudentDashboard() {
 
             </div>
 
-            {/* Quick actions */}
+            {/* Quick Actions */}
             <div className="mt-10">
 
                 <h2 className="text-xl font-semibold">

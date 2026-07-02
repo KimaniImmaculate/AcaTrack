@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 import NewProposal from "./pages/student/NewProposal";
 
 // Role-protected wrapper component
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 // Role-based dashboards
 import StudentDashboard from "./pages/student/StudentDashboard";
@@ -33,10 +35,23 @@ export default function App() {
         ========================== */}
 
         {/* Login page */}
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-        {/* Register page */}
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
 
         {/* =========================
             ROLE-BASED ROUTES
