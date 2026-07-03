@@ -46,7 +46,7 @@ export default function StudentDashboard() {
         <DashboardLayout>
 
             <h1 className="text-3xl font-bold text-blue-600">
-                Dashboard
+                Student Dashboard
             </h1>
 
             <div className="grid grid-cols-5 gap-4 mt-6">

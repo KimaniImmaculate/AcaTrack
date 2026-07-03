@@ -6,25 +6,18 @@ import { auth } from "../services/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { sidebarConfig } from "../config/sidebarConfig";
 
-/**
- * DASHBOARD LAYOUT
- * -----------------
- * Global layout for authenticated users
- * - Sidebar navigation (role-based)
- * - Top bar
- * - Logout
- */
 export default function DashboardLayout({
     children,
 }: {
     children: ReactNode;
 }) {
-    const { user, role } = useAuth();
+    const { profile, role } = useAuth();
     const navigate = useNavigate();
 
-    const menuItems = role
-        ? sidebarConfig[role as keyof typeof sidebarConfig]
-        : [];
+    const menuItems =
+        role && sidebarConfig[role as keyof typeof sidebarConfig]
+            ? sidebarConfig[role as keyof typeof sidebarConfig]
+            : [];
 
     const handleLogout = async () => {
         await signOut(auth);
@@ -58,8 +51,12 @@ export default function DashboardLayout({
 
                 {/* TOP BAR */}
                 <header className="bg-white shadow p-4 flex justify-between items-center">
+
                     <div className="text-sm text-gray-600">
-                        {user?.email}
+                        Welcome,{" "}
+                        {profile
+                            ? `${profile.firstName} ${profile.lastName}`
+                            : "Loading..."}
                     </div>
 
                     <button
@@ -68,6 +65,7 @@ export default function DashboardLayout({
                     >
                         Logout
                     </button>
+
                 </header>
 
                 {/* PAGE CONTENT */}

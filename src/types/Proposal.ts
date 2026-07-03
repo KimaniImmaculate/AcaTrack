@@ -1,6 +1,3 @@
-/**
- * Represents a research proposal.
- */
 export interface Proposal {
     id: string;
     title: string;
@@ -23,9 +20,10 @@ export interface Proposal {
     | "submitted"
     | "under_review"
     | "revision_requested"
+    | "resubmitted"
     | "approved"
     | "rejected";
 
-    createdAt: any;   // Firestore Timestamp
-    updatedAt: any;   // Firestore Timestamp
+    createdAt: any;
+    updatedAt: any;
 }

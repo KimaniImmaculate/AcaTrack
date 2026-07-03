@@ -1,51 +1,48 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../services/firebase";
 
-/**
- * TYPE: what the auth system provides globally
- */
+import { auth, db } from "../services/firebase";
+import { UserProfile } from "../types/User";
+
 type AuthContextType = {
     user: User | null;
+    profile: UserProfile | null;
+    role: "student" | "supervisor" | "admin" | null;
     loading: boolean;
-    role: string | null;
 };
 
-/**
- * CREATE CONTEXT (default fallback values)
- */
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    loading: true,
+    profile: null,
     role: null,
+    loading: true,
 });
 
-/**
- * AUTH PROVIDER
- * Wraps the entire app and provides auth + role state
- */
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [role, setRole] = useState<AuthContextType["role"]>(null);
     const [loading, setLoading] = useState(true);
-    const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             setUser(firebaseUser);
 
-            if (firebaseUser) {
-                // fetch role from Firestore
-                const docRef = doc(db, "users", firebaseUser.uid);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    setRole(docSnap.data().role);
-                } else {
-                    setRole(null);
-                }
-            } else {
+            if (!firebaseUser) {
+                setProfile(null);
                 setRole(null);
+                setLoading(false);
+                return;
+            }
+
+            const ref = doc(db, "users", firebaseUser.uid);
+            const snap = await getDoc(ref);
+
+            if (snap.exists()) {
+                const data = snap.data() as UserProfile;
+                setProfile(data);
+                setRole(data.role);
             }
 
             setLoading(false);
@@ -55,14 +52,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading, role }}>
+        <AuthContext.Provider value={{ user, profile, role, loading }}>
             {children}
         </AuthContext.Provider>
     );
-};
+}
 
-/**
- * CUSTOM HOOK
- * Used anywhere in the app to access auth state
- */
 export const useAuth = () => useContext(AuthContext);

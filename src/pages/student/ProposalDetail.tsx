@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import {
+    doc,
+    getDoc,
+    updateDoc,
+    serverTimestamp
+} from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { db } from "../../services/firebase";
@@ -17,9 +22,6 @@ export default function ProposalDetail() {
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
 
-    /**
-     * FETCH PROPOSAL
-     */
     useEffect(() => {
         const load = async () => {
             if (!id || !user) return;
@@ -34,15 +36,15 @@ export default function ProposalDetail() {
 
             const data = snap.data();
 
-            // 🔒 ownership check (IMPORTANT)
+            // ownership check
             if (data.studentId !== user.uid) {
                 navigate("/student/proposals");
                 return;
             }
 
-            setTitle(data.title);
-            setAbstract(data.abstract);
-            setStatus(data.status);
+            setTitle(data.title || "");
+            setAbstract(data.abstract || "");
+            setStatus(data.status || "draft");
 
             setLoading(false);
         };
@@ -50,10 +52,15 @@ export default function ProposalDetail() {
         load();
     }, [id, user]);
 
-    const isDraft = status === "draft";
+    /**
+     * ALLOW EDIT ONLY IN THESE STATES
+     */
+    const canEdit =
+        status === "draft" ||
+        status === "revision_requested";
 
     /**
-     * SAVE DRAFT
+     * SAVE (DRAFT / REVISION)
      */
     const handleSave = async () => {
         if (!id) return;
@@ -64,84 +71,68 @@ export default function ProposalDetail() {
             updatedAt: serverTimestamp(),
         });
 
-        alert("Draft saved");
+        alert("Saved successfully");
     };
 
     /**
-     * SUBMIT PROPOSAL
+     * SUBMIT (IMPORTANT FIX)
+     * ALWAYS overwrite status properly
      */
     const handleSubmit = async () => {
         if (!id) return;
 
         await updateDoc(doc(db, "proposals", id), {
-            title,
-            abstract,
-            status: "submitted",
+            status: status === "revision_requested"
+                ? "resubmitted"
+                : "submitted",
             updatedAt: serverTimestamp(),
         });
 
         navigate("/student/proposals");
     };
 
-    /**
-     * LOADING STATE
-     */
-    if (loading) {
-        return <div className="p-6">Loading...</div>;
-    }
-
-    /**
-     * NOT FOUND STATE
-     */
-    if (notFound) {
-        return <div className="p-6">Proposal not found</div>;
-    }
+    if (loading) return <div className="p-6">Loading...</div>;
+    if (notFound) return <div className="p-6">Proposal not found</div>;
 
     return (
         <div className="p-6 max-w-2xl mx-auto">
 
-            {/* HEADER */}
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-bold">
-                    Proposal Detail
-                </h1>
+                <h1 className="text-xl font-bold">Proposal Detail</h1>
 
                 <button
                     onClick={() => navigate("/student/proposals")}
                     className="border px-4 py-2 rounded"
                 >
-                    Back to Proposals
+                    Back
                 </button>
             </div>
 
-            {/* STATUS */}
             <p className="mb-3 text-sm text-gray-600">
                 Status: {status}
             </p>
 
-            {/* FORM */}
             <input
                 className="border p-2 w-full mb-3"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                disabled={!isDraft}
+                disabled={!canEdit}
             />
 
             <textarea
                 className="border p-2 w-full mb-3"
                 value={abstract}
                 onChange={(e) => setAbstract(e.target.value)}
-                disabled={!isDraft}
+                disabled={!canEdit}
             />
 
-            {/* ACTIONS */}
-            {isDraft && (
+            {canEdit && (
                 <div className="flex gap-3">
                     <button
                         onClick={handleSave}
                         className="border px-4 py-2"
                     >
-                        Save Draft
+                        Save
                     </button>
 
                     <button

@@ -4,33 +4,24 @@ import { auth, db } from "../../services/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
-/**
- * REGISTER PAGE
- * - Creates a new user in Firebase Authentication
- * - Automatically logs them in after signup
- */
 export default function Register() {
     const navigate = useNavigate();
-    // form state
+
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    /**
-     * HANDLE REGISTER
-     */
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
 
         try {
-            /**
-             * 1. Create user in Firebase Auth
-             */
+            // 1. Create auth user
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 email,
@@ -39,16 +30,17 @@ export default function Register() {
 
             const user = userCredential.user;
 
-            /**
-             * 2. Save user role in Firestore
-             * Default role = student
-             */
+            // 2. Create Firestore user profile
             await setDoc(doc(db, "users", user.uid), {
+                id: user.uid,
+                firstName,
+                lastName,
                 email: user.email,
                 role: "student",
                 createdAt: new Date()
             });
-            navigate("/student");
+
+            navigate("/login");
 
         } catch (err: any) {
             setError(err.message);
@@ -64,9 +56,29 @@ export default function Register() {
                 onSubmit={handleRegister}
                 className="w-80 p-6 bg-white shadow rounded"
             >
-                <h1 className="text-xl font-bold mb-4">Register</h1>
+                <h1 className="text-xl font-bold mb-4">
+                    Register
+                </h1>
 
-                {/* Email input */}
+                {/* FIRST NAME */}
+                <input
+                    type="text"
+                    placeholder="First Name"
+                    className="w-full border p-2 mb-3"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                />
+
+                {/* LAST NAME */}
+                <input
+                    type="text"
+                    placeholder="Last Name"
+                    className="w-full border p-2 mb-3"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                />
+
+                {/* EMAIL */}
                 <input
                     type="email"
                     placeholder="Email"
@@ -75,7 +87,7 @@ export default function Register() {
                     onChange={(e) => setEmail(e.target.value)}
                 />
 
-                {/* Password input */}
+                {/* PASSWORD */}
                 <input
                     type="password"
                     placeholder="Password"
@@ -84,14 +96,14 @@ export default function Register() {
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
-                {/* Error message */}
+                {/* ERROR */}
                 {error && (
                     <p className="text-red-500 text-sm mb-2">
                         {error}
                     </p>
                 )}
 
-                {/* Submit button */}
+                {/* SUBMIT */}
                 <button
                     type="submit"
                     disabled={loading}
@@ -100,6 +112,7 @@ export default function Register() {
                     {loading ? "Creating account..." : "Register"}
                 </button>
             </form>
+
         </div>
     );
 }
