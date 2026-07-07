@@ -16,6 +16,12 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import SupervisorDashboard from "./pages/supervisor/SupervisorDashboard";
 import SupervisorProposalDetail from "./pages/supervisor/SupervisorProposalDetail";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Users from "./pages/admin/Users";
+import AssignSupervisor from "./pages/admin/AssignSupervisor";
+import AdminProposals from "./pages/admin/AdminProposals";
+import AdminProposalDetail from "./pages/admin/AdminProposalDetail";
+import AdminUserDetail from "./pages/admin/AdminUserDetail";
+import Reports from "./pages/admin/Reports";
 
 /**
  * MAIN APPLICATION ROUTER
@@ -119,6 +125,57 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/assignments"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AssignSupervisor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/proposals"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminProposals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/proposals/:id"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminProposalDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users/:id"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminUserDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Reports />
             </ProtectedRoute>
           }
         />

@@ -1,148 +1,167 @@
 import { useEffect, useState } from "react";
-import {
-    doc,
-    getDoc,
-    updateDoc,
-    serverTimestamp
-} from "firebase/firestore";
-import { useNavigate, useParams } from "react-router-dom";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useParams } from "react-router-dom";
 
 import { db } from "../../services/firebase";
-import { useAuth } from "../../contexts/AuthContext";
+import { Proposal } from "../../types/Proposal";
+import StatusBadge from "../../components/StatusBadge";
 
 export default function ProposalDetail() {
+
     const { id } = useParams();
-    const { user } = useAuth();
-    const navigate = useNavigate();
 
-    const [title, setTitle] = useState("");
-    const [abstract, setAbstract] = useState("");
-    const [status, setStatus] = useState("");
-
+    const [proposal, setProposal] = useState<Proposal | null>(null);
     const [loading, setLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false);
+
 
     useEffect(() => {
-        const load = async () => {
-            if (!id || !user) return;
 
-            const snap = await getDoc(doc(db, "proposals", id));
+        if (!id) return;
 
-            if (!snap.exists()) {
-                setNotFound(true);
+        const unsubscribe = onSnapshot(
+            doc(db, "proposals", id),
+            (snapshot) => {
+
+                if (snapshot.exists()) {
+
+                    setProposal({
+                        id: snapshot.id,
+                        ...(snapshot.data() as Omit<Proposal, "id">),
+                    });
+
+                }
+
                 setLoading(false);
-                return;
             }
+        );
 
-            const data = snap.data();
 
-            // ownership check
-            if (data.studentId !== user.uid) {
-                navigate("/student/proposals");
-                return;
-            }
+        return () => unsubscribe();
 
-            setTitle(data.title || "");
-            setAbstract(data.abstract || "");
-            setStatus(data.status || "draft");
+    }, [id]);
 
-            setLoading(false);
-        };
 
-        load();
-    }, [id, user]);
+    if (loading) {
+        return (
+            <div className="p-6">
+                Loading proposal...
+            </div>
+        );
+    }
 
-    /**
-     * ALLOW EDIT ONLY IN THESE STATES
-     */
-    const canEdit =
-        status === "draft" ||
-        status === "revision_requested";
 
-    /**
-     * SAVE (DRAFT / REVISION)
-     */
-    const handleSave = async () => {
-        if (!id) return;
+    if (!proposal) {
+        return (
+            <div className="p-6">
+                Proposal not found.
+            </div>
+        );
+    }
 
-        await updateDoc(doc(db, "proposals", id), {
-            title,
-            abstract,
-            updatedAt: serverTimestamp(),
-        });
-
-        alert("Saved successfully");
-    };
-
-    /**
-     * SUBMIT (IMPORTANT FIX)
-     * ALWAYS overwrite status properly
-     */
-    const handleSubmit = async () => {
-        if (!id) return;
-
-        await updateDoc(doc(db, "proposals", id), {
-            status: status === "revision_requested"
-                ? "resubmitted"
-                : "submitted",
-            updatedAt: serverTimestamp(),
-        });
-
-        navigate("/student/proposals");
-    };
-
-    if (loading) return <div className="p-6">Loading...</div>;
-    if (notFound) return <div className="p-6">Proposal not found</div>;
 
     return (
-        <div className="p-6 max-w-2xl mx-auto">
 
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-bold">Proposal Detail</h1>
+        <div className="p-6 max-w-4xl mx-auto">
 
-                <button
-                    onClick={() => navigate("/student/proposals")}
-                    className="border px-4 py-2 rounded"
-                >
-                    Back
-                </button>
+            <h1 className="text-2xl font-bold mb-4">
+                {proposal.title}
+            </h1>
+
+
+            <div className="mb-4">
+                <StatusBadge status={proposal.status} />
             </div>
 
-            <p className="mb-3 text-sm text-gray-600">
-                Status: {status}
-            </p>
 
-            <input
-                className="border p-2 w-full mb-3"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={!canEdit}
-            />
+            <div className="space-y-6">
 
-            <textarea
-                className="border p-2 w-full mb-3"
-                value={abstract}
-                onChange={(e) => setAbstract(e.target.value)}
-                disabled={!canEdit}
-            />
 
-            {canEdit && (
-                <div className="flex gap-3">
-                    <button
-                        onClick={handleSave}
-                        className="border px-4 py-2"
-                    >
-                        Save
-                    </button>
+                <section>
+                    <h2 className="font-semibold">
+                        Department
+                    </h2>
 
-                    <button
-                        onClick={handleSubmit}
-                        className="bg-blue-600 text-white px-4 py-2"
-                    >
-                        Submit
-                    </button>
-                </div>
-            )}
+                    <p>
+                        {proposal.department}
+                    </p>
+                </section>
+
+
+
+                <section>
+                    <h2 className="font-semibold">
+                        Abstract
+                    </h2>
+
+                    <p>
+                        {proposal.abstract}
+                    </p>
+                </section>
+
+
+
+                <section>
+                    <h2 className="font-semibold">
+                        Problem Statement
+                    </h2>
+
+                    <p>
+                        {proposal.problemStatement}
+                    </p>
+                </section>
+
+
+
+                <section>
+                    <h2 className="font-semibold">
+                        Objectives
+                    </h2>
+
+                    <p>
+                        {proposal.objectives}
+                    </p>
+                </section>
+
+
+
+                <section>
+                    <h2 className="font-semibold">
+                        Methodology
+                    </h2>
+
+                    <p>
+                        {proposal.methodology}
+                    </p>
+                </section>
+
+
+
+                <section>
+                    <h2 className="font-semibold">
+                        Expected Outcome
+                    </h2>
+
+                    <p>
+                        {proposal.expectedOutcome}
+                    </p>
+                </section>
+
+
+
+                <section>
+                    <h2 className="font-semibold">
+                        Version
+                    </h2>
+
+                    <p>
+                        {proposal.version}
+                    </p>
+                </section>
+
+
+            </div>
+
         </div>
+
     );
 }

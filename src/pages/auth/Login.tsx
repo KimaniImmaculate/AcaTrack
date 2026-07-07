@@ -5,135 +5,188 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { auth, db } from "../../services/firebase";
 
-/**
- * LOGIN PAGE
- *
- * Authenticates a user using Firebase
- * and redirects them based on their role.
- */
 export default function Login() {
+
     const navigate = useNavigate();
 
-    // Form state
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    /**
-     * Handles user login.
-     */
-    const handleLogin = async (e: React.FormEvent) => {
+
+    const handleLogin = async (
+        e: React.FormEvent
+    ) => {
+
         e.preventDefault();
 
         setLoading(true);
         setError("");
 
-        try {
-            /**
-             * Authenticate the user.
-             */
-            const credential = await signInWithEmailAndPassword(
-                auth,
-                email,
-                password
-            );
 
-            /**
-             * Retrieve the user's role
-             * from Firestore.
-             */
-            const userDoc = await getDoc(
-                doc(db, "users", credential.user.uid)
-            );
+        try {
+
+            const credential =
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+            const userDoc =
+                await getDoc(
+                    doc(
+                        db,
+                        "users",
+                        credential.user.uid
+                    )
+                );
+
 
             if (!userDoc.exists()) {
-                setError("User profile not found.");
+
+                setError(
+                    "User profile not found."
+                );
+
                 return;
             }
 
-            const role = userDoc.data().role;
 
-            /**
-             * Redirect based on role.
-             */
-            switch (role) {
+            const userData =
+                userDoc.data();
+
+
+            switch (userData.role) {
+
                 case "student":
                     navigate("/student");
                     break;
+
 
                 case "supervisor":
                     navigate("/supervisor");
                     break;
 
+
                 case "admin":
                     navigate("/admin");
                     break;
 
+
                 default:
-                    navigate("/");
+                    setError(
+                        "Invalid user role."
+                    );
+
             }
+
+
         } catch (err: any) {
-            setError(err.message);
+
+            setError(
+                err.message
+            );
+
         } finally {
+
             setLoading(false);
+
         }
+
     };
 
+
+
     return (
+
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
+
 
             <form
                 onSubmit={handleLogin}
-                className="w-full max-w-sm rounded-lg bg-white p-6 shadow"
+                className="w-full max-w-sm bg-white p-6 rounded shadow"
             >
-                <h1 className="mb-6 text-center text-2xl font-bold">
+
+                <h1 className="text-2xl font-bold text-center mb-6">
                     Login
                 </h1>
+
+
 
                 <input
                     type="email"
                     placeholder="Email"
-                    className="mb-4 w-full rounded border p-2"
+                    className="w-full border p-2 mb-3"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) =>
+                        setEmail(e.target.value)
+                    }
                 />
+
+
 
                 <input
                     type="password"
                     placeholder="Password"
-                    className="mb-4 w-full rounded border p-2"
+                    className="w-full border p-2 mb-3"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) =>
+                        setPassword(e.target.value)
+                    }
                 />
 
-                {error && (
-                    <p className="mb-4 text-sm text-red-500">
-                        {error}
-                    </p>
-                )}
+
+
+                {
+                    error && (
+
+                        <p className="text-red-500 text-sm mb-3">
+                            {error}
+                        </p>
+
+                    )
+                }
+
+
 
                 <button
-                    type="submit"
                     disabled={loading}
-                    className="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+                    className="w-full bg-blue-600 text-white p-2 rounded"
                 >
-                    {loading ? "Logging in..." : "Login"}
+
+                    {
+                        loading
+                            ? "Logging in..."
+                            : "Login"
+                    }
+
                 </button>
 
-                <p className="mt-4 text-center text-sm">
+
+
+                <p className="text-center text-sm mt-4">
+
                     Don't have an account?{" "}
+
                     <Link
                         to="/register"
-                        className="text-blue-600 hover:underline"
+                        className="text-blue-600"
                     >
                         Register
                     </Link>
+
                 </p>
+
+
             </form>
 
+
         </div>
+
     );
+
 }
