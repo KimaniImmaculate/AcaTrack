@@ -3,10 +3,7 @@ import {
     collection,
     onSnapshot,
     query,
-    where,
-    doc,
-    updateDoc,
-    serverTimestamp
+    where
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +13,15 @@ import { Proposal } from "../../types/Proposal";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import StatusBadge from "../../components/StatusBadge";
 
+import {
+    startReview,
+    requestRevision,
+    approveProposal,
+    rejectProposal
+} from "../../services/proposalWorkflow";
+
 export default function SupervisorDashboard() {
+
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -24,6 +29,7 @@ export default function SupervisorDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+
         if (!user) {
             setLoading(false);
             return;
@@ -35,6 +41,7 @@ export default function SupervisorDashboard() {
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
+
             const data: Proposal[] = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...(doc.data() as Omit<Proposal, "id">),
@@ -42,176 +49,256 @@ export default function SupervisorDashboard() {
 
             setProposals(data);
             setLoading(false);
+
         });
 
         return () => unsubscribe();
+
     }, [user]);
 
-    const updateStatus = async (id: string, status: Proposal["status"]) => {
-        await updateDoc(doc(db, "proposals", id), {
-            status,
-            updatedAt: serverTimestamp(),
-        });
-    };
+
 
     if (loading) {
+
         return (
             <DashboardLayout>
-                <div className="p-6">Loading supervisor dashboard...</div>
+                <div className="p-6">
+                    Loading supervisor dashboard...
+                </div>
             </DashboardLayout>
         );
+
     }
 
+
+
     const submitted = proposals.filter(
-        p => p.status === "submitted" || p.status === "resubmitted"
+        p =>
+            p.status === "submitted" ||
+            p.status === "resubmitted"
     );
 
     const underReview = proposals.filter(
         p => p.status === "under_review"
     );
 
+
+
     return (
+
         <DashboardLayout>
 
-            {/* HEADER */}
             <div className="mb-6">
+
                 <h1 className="text-2xl font-bold">
                     Supervisor Dashboard
                 </h1>
+
                 <p className="text-gray-600">
                     Manage research proposal workflow
                 </p>
+
             </div>
 
-            {/* STATS */}
+
+
+            {/* SUMMARY */}
+
             <div className="grid grid-cols-3 gap-4 mb-6">
 
                 <div className="p-4 bg-white border rounded">
-                    <p className="text-sm text-gray-500">Total</p>
-                    <p className="text-xl font-bold">{proposals.length}</p>
+
+                    <p className="text-sm text-gray-500">
+                        Total
+                    </p>
+
+                    <p className="text-xl font-bold">
+                        {proposals.length}
+                    </p>
+
                 </div>
+
 
                 <div className="p-4 bg-yellow-50 border rounded">
-                    <p className="text-sm text-gray-500">Submitted</p>
-                    <p className="text-xl font-bold">{submitted.length}</p>
+
+                    <p className="text-sm text-gray-500">
+                        Submitted
+                    </p>
+
+                    <p className="text-xl font-bold">
+                        {submitted.length}
+                    </p>
+
                 </div>
+
 
                 <div className="p-4 bg-blue-50 border rounded">
-                    <p className="text-sm text-gray-500">Under Review</p>
-                    <p className="text-xl font-bold">{underReview.length}</p>
+
+                    <p className="text-sm text-gray-500">
+                        Under Review
+                    </p>
+
+                    <p className="text-xl font-bold">
+                        {underReview.length}
+                    </p>
+
                 </div>
+
             </div>
 
-            {/* LIST */}
+
+
+            {/* PROPOSALS */}
+
             <div className="space-y-4">
 
                 {proposals.length === 0 ? (
+
                     <p className="text-gray-500">
                         No proposals assigned yet.
                     </p>
+
                 ) : (
-                    proposals.map((p) => (
+
+                    proposals.map((proposal) => (
+
                         <div
-                            key={p.id}
-                            className={`p-4 border rounded shadow-sm ${p.status === "submitted" || p.status === "resubmitted"
-                                ? "border-blue-300"
-                                : ""
+                            key={proposal.id}
+                            className={`border rounded-lg p-5 bg-white shadow-sm ${proposal.status === "submitted" ||
+                                    proposal.status === "resubmitted"
+                                    ? "border-blue-300"
+                                    : ""
                                 }`}
                         >
 
-                            {/* HEADER */}
                             <div
                                 className="cursor-pointer"
                                 onClick={() =>
-                                    navigate(`/supervisor/proposals/${p.id}`)
+                                    navigate(`/supervisor/proposals/${proposal.id}`)
                                 }
                             >
-                                <h2 className="font-semibold">
-                                    {p.title}
+
+                                <h2 className="font-semibold text-lg">
+                                    {proposal.title}
                                 </h2>
 
-                                <p className="text-sm text-gray-500">
-                                    Status: <StatusBadge status={p.status} />
-                                </p>
+                                <div className="mt-2">
+                                    <StatusBadge
+                                        status={proposal.status}
+                                    />
+                                </div>
+
                             </div>
 
-                            {/* INTELLIGENCE FEEDBACK */}
-                            {p.status === "revision_requested" && (
-                                <div className="mt-2 text-sm text-red-600">
+
+
+                            {proposal.status === "revision_requested" && (
+
+                                <div className="mt-3 text-red-600 text-sm">
+
                                     ⚠ Waiting for student revision
-                                </div>
-                            )}
-
-                            {p.status === "resubmitted" && (
-                                <div className="mt-2 text-sm text-purple-600">
-                                    🔁 Resubmitted by student — awaiting review
-                                </div>
-                            )}
-
-                            {/* ACTIONS (FIXED) */}
-                            {(p.status === "submitted" || p.status === "resubmitted") && (
-                                <div className="flex gap-2 mt-3 flex-wrap">
-
-                                    <button
-                                        onClick={() =>
-                                            updateStatus(p.id, "under_review")
-                                        }
-                                        className="px-3 py-1 bg-blue-600 text-white rounded"
-                                    >
-                                        Start Review
-                                    </button>
-
-                                    <button
-                                        onClick={() =>
-                                            updateStatus(p.id, "rejected")
-                                        }
-                                        className="px-3 py-1 bg-red-600 text-white rounded"
-                                    >
-                                        Reject
-                                    </button>
-
-                                    <button
-                                        onClick={() =>
-                                            updateStatus(p.id, "revision_requested")
-                                        }
-                                        className="px-3 py-1 bg-yellow-500 text-white rounded"
-                                    >
-                                        Request Revision
-                                    </button>
 
                                 </div>
+
                             )}
 
-                            {p.status === "under_review" && (
-                                <div className="flex gap-2 mt-3 flex-wrap">
+
+
+                            {proposal.status === "resubmitted" && (
+
+                                <div className="mt-3 text-purple-600 text-sm">
+
+                                    🔁 Student has resubmitted the proposal
+
+                                </div>
+
+                            )}
+
+
+
+                            {(proposal.status === "submitted" ||
+                                proposal.status === "resubmitted") && (
+
+                                    <div className="flex gap-2 flex-wrap mt-4">
+
+                                        <button
+                                            onClick={() =>
+                                                startReview(proposal)
+                                            }
+                                            className="px-4 py-2 rounded bg-blue-600 text-white"
+                                        >
+                                            Start Review
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                requestRevision(proposal)
+                                            }
+                                            className="px-4 py-2 rounded bg-yellow-500 text-white"
+                                        >
+                                            Request Revision
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                rejectProposal(proposal)
+                                            }
+                                            className="px-4 py-2 rounded bg-red-600 text-white"
+                                        >
+                                            Reject
+                                        </button>
+
+                                    </div>
+
+                                )}
+
+
+
+                            {proposal.status === "under_review" && (
+
+                                <div className="flex gap-2 flex-wrap mt-4">
 
                                     <button
                                         onClick={() =>
-                                            updateStatus(p.id, "approved")
+                                            approveProposal(proposal)
                                         }
-                                        className="px-3 py-1 bg-green-600 text-white rounded"
+                                        className="px-4 py-2 rounded bg-green-600 text-white"
                                     >
                                         Approve
                                     </button>
 
                                     <button
                                         onClick={() =>
-                                            updateStatus(p.id, "revision_requested")
+                                            requestRevision(proposal)
                                         }
-                                        className="px-3 py-1 bg-yellow-500 text-white rounded"
+                                        className="px-4 py-2 rounded bg-yellow-500 text-white"
                                     >
                                         Request Revision
                                     </button>
 
+                                    <button
+                                        onClick={() =>
+                                            rejectProposal(proposal)
+                                        }
+                                        className="px-4 py-2 rounded bg-red-600 text-white"
+                                    >
+                                        Reject
+                                    </button>
+
                                 </div>
+
                             )}
 
                         </div>
+
                     ))
+
                 )}
 
             </div>
 
         </DashboardLayout>
+
     );
+
 }

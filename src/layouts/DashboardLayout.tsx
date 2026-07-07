@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../services/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { sidebarConfig } from "../config/sidebarConfig";
+import NotificationBell from "../components/NotificationBell";
 
 export default function DashboardLayout({
     children,
@@ -49,7 +50,6 @@ export default function DashboardLayout({
             {/* MAIN AREA */}
             <div className="flex-1 flex flex-col">
 
-                {/* TOP BAR */}
                 <header className="bg-white shadow p-4 flex justify-between items-center">
 
                     <div className="text-sm text-gray-600">
@@ -59,12 +59,21 @@ export default function DashboardLayout({
                             : "Loading..."}
                     </div>
 
-                    <button
-                        onClick={handleLogout}
-                        className="bg-red-600 text-white px-4 py-2 rounded"
-                    >
-                        Logout
-                    </button>
+
+                    <div className="flex items-center gap-6">
+
+                        <NotificationBell />
+
+
+                        <button
+                            onClick={handleLogout}
+                            className="bg-red-600 text-white px-4 py-2 rounded"
+                        >
+                            Logout
+                        </button>
+
+                    </div>
+
 
                 </header>
 

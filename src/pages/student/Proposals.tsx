@@ -1,97 +1,279 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+
+import {
+    collection,
+    onSnapshot,
+    query,
+    where
+} from "firebase/firestore";
+
+import {
+    useNavigate
+} from "react-router-dom";
+
 
 import { db } from "../../services/firebase";
-import { useAuth } from "../../contexts/AuthContext";
-import { Proposal } from "../../types/Proposal";
+
+import {
+    useAuth
+} from "../../contexts/AuthContext";
+
+
+import {
+    Proposal
+} from "../../types/Proposal";
+
+
 import StatusBadge from "../../components/StatusBadge";
-import { statusMessages, statusColors } from "../../utils/statusIntelligence";
+
+
+import {
+    statusMessages,
+    statusColors
+} from "../../utils/statusIntelligence";
+
+
+
 
 export default function Proposals() {
+
+
     const { user } = useAuth();
+
     const navigate = useNavigate();
 
-    const [proposals, setProposals] = useState<Proposal[]>([]);
-    const [loading, setLoading] = useState(true);
 
-    /**
-     * REAL-TIME FIRESTORE LISTENER
-     */
+
+    const [proposals, setProposals]
+        =
+        useState<Proposal[]>([]);
+
+
+    const [loading, setLoading]
+        =
+        useState(true);
+
+
+
+
+
     useEffect(() => {
+
+
         if (!user) {
+
             setLoading(false);
+
             return;
+
         }
 
+
+
         const q = query(
+
             collection(db, "proposals"),
+
             where("studentId", "==", user.uid)
+
         );
 
-        const unsubscribe = onSnapshot(q, (snap) => {
-            const data: Proposal[] = snap.docs.map((d) => ({
-                id: d.id,
-                ...(d.data() as Omit<Proposal, "id">),
-            }));
 
-            setProposals(data);
-            setLoading(false);
-        });
+
+
+        const unsubscribe =
+
+            onSnapshot(q, (snapshot) => {
+
+
+                const data: Proposal[] = snapshot.docs.map((doc) => ({
+
+                    id: doc.id,
+
+                    ...(doc.data() as Omit<Proposal, "id">)
+
+                }));
+
+
+
+                setProposals(data);
+
+                setLoading(false);
+
+
+
+            });
+
+
 
         return () => unsubscribe();
+
+
+
     }, [user]);
 
+
+
+
+
     if (loading) {
-        return <div className="p-6">Loading...</div>;
+
+        return (
+
+            <div className="p-6">
+
+                Loading proposals...
+
+            </div>
+
+        );
+
     }
 
+
+
+
+
+
     return (
+
         <div className="p-6">
 
-            <h1 className="text-2xl font-bold mb-4">
+
+            <h1 className="text-2xl font-bold mb-6">
+
                 My Proposals
+
             </h1>
 
-            {proposals.length === 0 ? (
-                <p className="text-gray-500">
-                    No proposals yet. Create your first proposal.
-                </p>
-            ) : (
-                <div className="space-y-3">
 
-                    {proposals.map((p) => (
-                        <div
-                            key={p.id}
-                            onClick={() => navigate(`/student/proposals/${p.id}`)}
-                            className="p-4 border rounded cursor-pointer hover:bg-gray-50"
-                        >
-                            <h2 className="font-semibold">
-                                {p.title}
-                            </h2>
 
-                            {/* STATUS INTELLIGENCE */}
-                            <div className="mt-2">
-                                <StatusBadge status={p.status} />
 
-                                <div className={`mt-2 text-sm ${statusColors[p.status]}`}>
-                                    {statusMessages[p.status]}
+
+            {
+                proposals.length === 0 ?
+
+
+                    <p className="text-gray-500">
+
+                        No proposals created yet.
+
+                    </p>
+
+
+
+                    :
+
+
+                    <div className="space-y-4">
+
+
+                        {
+
+                            proposals.map((p) => (
+
+
+                                <div
+
+                                    key={p.id}
+
+                                    className="border rounded p-4 hover:bg-gray-50"
+
+                                >
+
+
+                                    <div
+
+                                        onClick={() => navigate(`/student/proposals/${p.id}`)}
+
+                                        className="cursor-pointer"
+
+                                    >
+
+
+                                        <h2 className="font-semibold text-lg">
+
+                                            {p.title}
+
+                                        </h2>
+
+
+
+
+                                        <div className="mt-2">
+
+                                            <StatusBadge status={p.status} />
+
+                                        </div>
+
+
+
+
+                                        <p className={
+
+                                            `text-sm mt-2 ${statusColors[p.status]}`
+
+                                        }>
+
+                                            {statusMessages[p.status]}
+
+                                        </p>
+
+
+
+                                    </div>
+
+
+
+
+
+
+                                    {
+
+                                        (p.status === "draft" ||
+
+                                            p.status === "revision_requested")
+
+                                        &&
+
+
+                                        <button
+
+                                            onClick={() => navigate(`/student/proposals/${p.id}`)}
+
+                                            className="mt-3 bg-yellow-500 text-white px-3 py-1 rounded"
+
+                                        >
+
+                                            Edit Proposal
+
+                                        </button>
+
+
+                                    }
+
+
+
+
+
                                 </div>
-                            </div>
 
-                            {/* ACTION REQUIRED BANNER */}
-                            {p.status === "revision_requested" && (
-                                <div className="mt-3 p-2 bg-red-50 text-red-700 text-sm rounded">
-                                    Action required: update your proposal and resubmit.
-                                </div>
-                            )}
 
-                        </div>
-                    ))}
+                            ))
 
-                </div>
-            )}
+                        }
+
+
+                    </div>
+
+
+            }
+
+
 
         </div>
+
     );
+
+
 }

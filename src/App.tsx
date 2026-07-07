@@ -22,6 +22,7 @@ import AdminProposals from "./pages/admin/AdminProposals";
 import AdminProposalDetail from "./pages/admin/AdminProposalDetail";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import Reports from "./pages/admin/Reports";
+import Notifications from "./pages/Notifications";
 
 /**
  * MAIN APPLICATION ROUTER
@@ -176,6 +177,20 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "student",
+                "supervisor",
+                "admin"
+              ]}
+            >
+              <Notifications />
             </ProtectedRoute>
           }
         />
