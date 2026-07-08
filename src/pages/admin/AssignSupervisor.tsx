@@ -12,6 +12,9 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { db } from "../../services/firebase";
 import { UserProfile } from "../../types/User";
 import StatusBadge from "../../components/StatusBadge";
+import { useAuth } from "../../contexts/AuthContext";
+import { assignSupervisor } from "../../services/proposalWorkflow";
+import { Proposal } from "../../types/Proposal";
 
 
 interface StudentAssignment {
@@ -33,6 +36,7 @@ interface StudentAssignment {
 
 export default function AssignSupervisor() {
 
+    const { user, profile } = useAuth();
     const [students, setStudents] = useState<UserProfile[]>([]);
     const [supervisors, setSupervisors] = useState<UserProfile[]>([]);
     const [proposals, setProposals] = useState<StudentAssignment[]>([]);
@@ -179,20 +183,35 @@ export default function AssignSupervisor() {
         proposalId: string,
         supervisorId: string
     ) => {
+        if (!user) return;
 
+        const prop = proposals.find((p) => p.id === proposalId);
+        if (!prop) return;
 
-        await updateDoc(
-            doc(db, "proposals", proposalId),
-            {
+        const supervisor = supervisors.find((s) => s.id === supervisorId);
+        const supervisorName = supervisor
+            ? `${supervisor.firstName} ${supervisor.lastName}`
+            : null;
 
-                supervisorId:
-                    supervisorId === ""
-                        ? null
-                        : supervisorId
+        const targetSupervisorId = supervisorId === "" ? null : supervisorId;
 
-            }
+        const actor = {
+            uid: user.uid,
+            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Admin",
+            role: "admin" as const
+        };
+
+        const mockProposal = {
+            id: prop.id,
+            studentId: prop.studentId
+        } as Proposal;
+
+        await assignSupervisor(
+            mockProposal,
+            targetSupervisorId,
+            supervisorName,
+            actor
         );
-
 
     };
 

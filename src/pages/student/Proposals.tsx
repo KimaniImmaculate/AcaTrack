@@ -200,10 +200,20 @@ export default function Proposals() {
 
 
 
-                                        <div className="mt-2">
-
+                                        <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
                                             <StatusBadge status={p.status} />
-
+                                            {p.updatedAt?.toDate && (
+                                                <span className="text-xs text-gray-400">
+                                                    Updated:{" "}
+                                                    {p.updatedAt.toDate().toLocaleDateString("en-US", {
+                                                        day: "numeric", month: "short", year: "numeric"
+                                                    })}{" "}
+                                                    •{" "}
+                                                    {p.updatedAt.toDate().toLocaleTimeString("en-US", {
+                                                        hour: "numeric", minute: "2-digit"
+                                                    })}
+                                                </span>
+                                            )}
                                         </div>
 
 

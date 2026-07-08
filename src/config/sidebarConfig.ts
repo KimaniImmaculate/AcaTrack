@@ -8,7 +8,6 @@ export const sidebarConfig = {
     supervisor: [
         { label: "Dashboard", path: "/supervisor" },
         { label: "Assigned Proposals", path: "/supervisor/assigned" },
-        { label: "Reviews", path: "/supervisor/reviews" },
     ],
 
     admin: [

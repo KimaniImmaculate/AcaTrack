@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import ActivityTimeline from "../../components/ActivityTimeline";
+import CommentsList from "../../components/CommentsList";
 
 import {
     doc,
     onSnapshot,
     updateDoc,
-    serverTimestamp
+    serverTimestamp,
+    getDoc
 } from "firebase/firestore";
 
 import {
@@ -18,19 +21,20 @@ import {
     Proposal
 } from "../../types/Proposal";
 
+import { UserProfile } from "../../types/User";
 import StatusBadge from "../../components/StatusBadge";
-
-
+import { useAuth } from "../../contexts/AuthContext";
 import {
     submitProposal,
     resubmitProposal
 } from "../../services/proposalWorkflow";
+import { uploadProposalDocument } from "../../services/storageService";
 
 
 
 export default function ProposalDetail() {
 
-
+    const { user, profile } = useAuth();
     const { id } = useParams();
 
 
@@ -43,7 +47,12 @@ export default function ProposalDetail() {
         =
         useState(true);
 
+    const [supervisor, setSupervisor]
+        =
+        useState<UserProfile | null | "not_found">(null);
 
+    const [file, setFile] = useState<File | null>(null);
+    const [responseText, setResponseText] = useState("");
     const [editing, setEditing]
         =
         useState(false);
@@ -59,15 +68,39 @@ export default function ProposalDetail() {
             problemStatement: "",
             objectives: "",
             methodology: "",
-            expectedOutcome: ""
+            expectedOutcome: "",
+            department: ""
+
 
         });
 
 
 
 
+    // Fetch supervisor profile whenever proposal's supervisorId changes
     useEffect(() => {
 
+        const sid = proposal?.supervisorId;
+        if (!sid) {
+            setSupervisor(null);
+            return;
+        }
+
+        getDoc(doc(db, "users", sid))
+            .then((snap) => {
+                if (snap.exists()) {
+                    setSupervisor({ id: snap.id, ...snap.data() } as UserProfile);
+                } else {
+                    setSupervisor("not_found");
+                }
+            })
+            .catch(() => setSupervisor("not_found"));
+
+    }, [proposal?.supervisorId]);
+
+
+    // Fetch proposal snapshot
+    useEffect(() => {
 
         if (!id) return;
 
@@ -106,7 +139,9 @@ export default function ProposalDetail() {
 
                             methodology: data.methodology,
 
-                            expectedOutcome: data.expectedOutcome
+                            expectedOutcome: data.expectedOutcome,
+
+                            department: data.department
 
                         });
 
@@ -135,25 +170,31 @@ export default function ProposalDetail() {
 
         if (!proposal) return;
 
+        setLoading(true);
 
-
-        await updateDoc(
-
-            doc(db, "proposals", proposal.id),
-
-            {
-
-                ...form,
-
-                updatedAt: serverTimestamp()
-
+        try {
+            let docUrl = proposal.documentURL || "";
+            if (file) {
+                docUrl = await uploadProposalDocument(proposal.studentId, file);
             }
 
-        );
+            await updateDoc(
+                doc(db, "proposals", proposal.id),
+                {
+                    ...form,
+                    documentURL: docUrl,
+                    updatedAt: serverTimestamp()
+                }
+            );
 
-
-        setEditing(false);
-
+            setEditing(false);
+            setFile(null);
+        } catch (error) {
+            console.error("Error saving proposal changes:", error);
+            alert("Failed to save changes.");
+        } finally {
+            setLoading(false);
+        }
 
     };
 
@@ -244,11 +285,79 @@ export default function ProposalDetail() {
 
 
 
-            <div className="mt-3">
-
+            <div className="mt-3 flex items-center justify-between gap-4 flex-wrap">
                 <StatusBadge status={proposal.status} />
-
+                {proposal.updatedAt?.toDate && (
+                    <span className="text-xs text-gray-400">
+                        Last updated:{" "}
+                        {proposal.updatedAt.toDate().toLocaleDateString("en-US", {
+                            day: "numeric", month: "long", year: "numeric"
+                        })}{" "}
+                        •{" "}
+                        {proposal.updatedAt.toDate().toLocaleTimeString("en-US", {
+                            hour: "numeric", minute: "2-digit"
+                        })}
+                    </span>
+                )}
             </div>
+
+
+            {/* Supervisor info for the student */}
+            <div className="mt-4 p-4 bg-gray-50 border rounded text-sm space-y-1">
+                <p className="font-semibold text-gray-700 mb-1">Assigned Supervisor</p>
+                {proposal.supervisorId ? (
+                    supervisor === null ? (
+                        <p className="text-gray-400">Loading supervisor details...</p>
+                    ) : supervisor === "not_found" ? (
+                        <p className="text-gray-500">Details not found</p>
+                    ) : (
+                        <>
+                            <p>
+                                <span className="font-medium text-gray-600">Name: </span>
+                                {supervisor.firstName} {supervisor.lastName}
+                            </p>
+                            <p>
+                                <span className="font-medium text-gray-600">Department: </span>
+                                {supervisor.department ?? "Details not found"}
+                            </p>
+                        </>
+                    )
+                ) : (
+                    <p className="text-gray-400">No supervisor assigned yet.</p>
+                )}
+            </div>
+
+
+            {/* Complete Proposal Document for the student */}
+            <div className="mt-4 p-4 bg-gray-50 border rounded text-sm space-y-1">
+                <p className="font-semibold text-gray-700 mb-1">Complete Proposal Document</p>
+                {proposal.documentURL ? (
+                    <a
+                        href={proposal.documentURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-blue-600 hover:underline gap-1 mt-1 font-medium"
+                    >
+                        📄 View Complete Proposal Document
+                    </a>
+                ) : (
+                    <p className="text-gray-400">No document attached yet.</p>
+                )}
+            </div>
+
+            {editing && (
+                <div className="mt-4 p-4 border border-dashed rounded bg-yellow-50/50">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Upload New Complete Proposal Document (PDF, Word)
+                    </label>
+                    <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        className="w-full border rounded p-2 bg-white text-sm"
+                    />
+                </div>
+            )}
 
 
 
@@ -319,7 +428,14 @@ export default function ProposalDetail() {
 
                         <button
 
-                            onClick={() => submitProposal(proposal)}
+                            onClick={() => {
+                                if (!user) return;
+                                submitProposal(proposal, {
+                                    uid: user.uid,
+                                    name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Student",
+                                    role: "student"
+                                });
+                            }}
 
                             className="bg-blue-600 text-white px-4 py-2 rounded"
 
@@ -342,17 +458,43 @@ export default function ProposalDetail() {
 
                     (
 
-                        <button
-
-                            onClick={() => resubmitProposal(proposal)}
-
-                            className="bg-purple-600 text-white px-4 py-2 rounded"
-
-                        >
-
-                            Resubmit Proposal
-
-                        </button>
+                        <div className="w-full mt-4 p-4 border rounded bg-purple-50/20 space-y-3">
+                            <label className="block text-sm font-semibold text-gray-700">
+                                Explain how you resolved the comments
+                            </label>
+                            <textarea
+                                className="w-full border rounded p-2 text-sm bg-white"
+                                rows={3}
+                                placeholder="E.g., Updated the methodology details and clarified expected outcomes..."
+                                value={responseText}
+                                onChange={(e) => setResponseText(e.target.value)}
+                            />
+                            <button
+                                onClick={async () => {
+                                    if (!user) return;
+                                    setLoading(true);
+                                    try {
+                                        await resubmitProposal(
+                                            proposal,
+                                            {
+                                                uid: user.uid,
+                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Student",
+                                                role: "student"
+                                            },
+                                            responseText
+                                        );
+                                        setResponseText("");
+                                    } catch (error) {
+                                        console.error("Resubmit error:", error);
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="bg-purple-600 text-white px-4 py-2 rounded font-medium hover:bg-purple-700 transition-colors"
+                            >
+                                Resubmit with Resolved Comments
+                            </button>
+                        </div>
 
                     )
 
@@ -374,21 +516,25 @@ export default function ProposalDetail() {
 
 
 
-                <Field
-
+                <EditableField
                     label="Department"
-
-                    value={proposal.department}
-
+                    editing={editing}
+                    value={form.department}
+                    display={proposal.department}
+                    onChange={(v) =>
+                        setForm({
+                            ...form,
+                            department: v
+                        })
+                    }
                 />
-
 
 
 
 
                 <EditableField
 
-                    label="Abstract"
+                    label="Abstract (Summary)"
 
                     editing={editing}
 
@@ -416,7 +562,7 @@ export default function ProposalDetail() {
 
                 <EditableField
 
-                    label="Problem Statement"
+                    label="Problem Statement (Summary)"
 
                     editing={editing}
 
@@ -444,7 +590,7 @@ export default function ProposalDetail() {
 
                 <EditableField
 
-                    label="Objectives"
+                    label="Objectives (Summary)"
 
                     editing={editing}
 
@@ -472,7 +618,7 @@ export default function ProposalDetail() {
 
                 <EditableField
 
-                    label="Methodology"
+                    label="Methodology (Summary)"
 
                     editing={editing}
 
@@ -500,7 +646,7 @@ export default function ProposalDetail() {
 
                 <EditableField
 
-                    label="Expected Outcome"
+                    label="Expected Outcome (Summary)"
 
                     editing={editing}
 
@@ -538,6 +684,9 @@ export default function ProposalDetail() {
 
             </div>
 
+            <CommentsList proposalId={proposal.id} />
+
+            <ActivityTimeline proposalId={proposal.id} />
 
 
         </div>

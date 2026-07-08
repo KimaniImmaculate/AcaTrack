@@ -5,6 +5,7 @@ import { db } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useSupervisors } from "../../hooks/useSupervisors";
+import { uploadProposalDocument } from "../../services/storageService";
 
 export default function NewProposal() {
 
@@ -23,6 +24,7 @@ export default function NewProposal() {
     const [department, setDepartment] = useState("");
     const [supervisorId, setSupervisorId] = useState("");
 
+    const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
 
 
@@ -38,6 +40,11 @@ export default function NewProposal() {
 
 
         try {
+
+            let docUrl = "";
+            if (file) {
+                docUrl = await uploadProposalDocument(user.uid, file);
+            }
 
             await addDoc(
                 collection(db, "proposals"),
@@ -57,7 +64,7 @@ export default function NewProposal() {
                         supervisorId || null,
 
 
-                    documentURL: "",
+                    documentURL: docUrl,
 
                     version: 1,
 
@@ -124,7 +131,7 @@ export default function NewProposal() {
                 <textarea
                     className="w-full border rounded p-2"
                     rows={4}
-                    placeholder="Abstract"
+                    placeholder="Abstract (Summary)"
                     value={abstract}
                     onChange={(e) => setAbstract(e.target.value)}
                     required
@@ -135,7 +142,7 @@ export default function NewProposal() {
                 <textarea
                     className="w-full border rounded p-2"
                     rows={4}
-                    placeholder="Problem Statement"
+                    placeholder="Problem Statement (Summary)"
                     value={problemStatement}
                     onChange={(e) => setProblemStatement(e.target.value)}
                     required
@@ -146,7 +153,7 @@ export default function NewProposal() {
                 <textarea
                     className="w-full border rounded p-2"
                     rows={4}
-                    placeholder="Objectives"
+                    placeholder="Objectives (Summary)"
                     value={objectives}
                     onChange={(e) => setObjectives(e.target.value)}
                     required
@@ -157,7 +164,7 @@ export default function NewProposal() {
                 <textarea
                     className="w-full border rounded p-2"
                     rows={4}
-                    placeholder="Methodology"
+                    placeholder="Methodology (Summary)"
                     value={methodology}
                     onChange={(e) => setMethodology(e.target.value)}
                     required
@@ -168,7 +175,7 @@ export default function NewProposal() {
                 <textarea
                     className="w-full border rounded p-2"
                     rows={4}
-                    placeholder="Expected Outcome"
+                    placeholder="Expected Outcome (Summary)"
                     value={expectedOutcome}
                     onChange={(e) => setExpectedOutcome(e.target.value)}
                     required
@@ -210,6 +217,18 @@ export default function NewProposal() {
                 </select>
 
 
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Attach Complete Proposal Document (PDF, Word)
+                    </label>
+                    <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        className="w-full border rounded p-2 bg-white text-sm"
+                    />
+                </div>
 
                 <button
                     disabled={loading}

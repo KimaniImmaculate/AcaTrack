@@ -10,6 +10,8 @@ import { db } from "../../services/firebase";
 import { Proposal } from "../../types/Proposal";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import StatusBadge from "../../components/StatusBadge";
+import ActivityTimeline from "../../components/ActivityTimeline";
+import CommentsList from "../../components/CommentsList";
 
 
 export default function AdminProposalDetail() {
@@ -149,8 +151,20 @@ export default function AdminProposalDetail() {
                     </h1>
 
 
-                    <div className="mt-3">
+                    <div className="mt-3 flex items-center justify-between gap-4 flex-wrap">
                         <StatusBadge status={proposal.status} />
+                        {proposal.updatedAt?.toDate && (
+                            <span className="text-xs text-gray-400">
+                                Last updated:{" "}
+                                {proposal.updatedAt.toDate().toLocaleDateString("en-US", {
+                                    day: "numeric", month: "long", year: "numeric"
+                                })}{" "}
+                                •{" "}
+                                {proposal.updatedAt.toDate().toLocaleTimeString("en-US", {
+                                    hour: "numeric", minute: "2-digit"
+                                })}
+                            </span>
+                        )}
                     </div>
 
                 </div>
@@ -175,7 +189,7 @@ export default function AdminProposalDetail() {
 
                     <section>
                         <h2 className="font-semibold">
-                            Abstract
+                            Abstract (Summary)
                         </h2>
 
                         <p>
@@ -187,7 +201,7 @@ export default function AdminProposalDetail() {
 
                     <section>
                         <h2 className="font-semibold">
-                            Problem Statement
+                            Problem Statement (Summary)
                         </h2>
 
                         <p>
@@ -199,7 +213,7 @@ export default function AdminProposalDetail() {
 
                     <section>
                         <h2 className="font-semibold">
-                            Objectives
+                            Objectives (Summary)
                         </h2>
 
                         <p>
@@ -211,7 +225,7 @@ export default function AdminProposalDetail() {
 
                     <section>
                         <h2 className="font-semibold">
-                            Methodology
+                            Methodology (Summary)
                         </h2>
 
                         <p>
@@ -223,7 +237,7 @@ export default function AdminProposalDetail() {
 
                     <section>
                         <h2 className="font-semibold">
-                            Expected Outcome
+                            Expected Outcome (Summary)
                         </h2>
 
                         <p>
@@ -281,8 +295,32 @@ export default function AdminProposalDetail() {
 
 
 
+                    <section>
+                        <h2 className="font-semibold">
+                            Complete Proposal Document
+                        </h2>
+
+                        {proposal.documentURL ? (
+                            <a
+                                href={proposal.documentURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-blue-600 hover:underline gap-1 mt-1 font-medium"
+                            >
+                                📄 View Complete Proposal Document
+                            </a>
+                        ) : (
+                            <p className="text-gray-500 italic">No document attached.</p>
+                        )}
+                    </section>
+
+
+
                 </div>
 
+                <CommentsList proposalId={proposal.id} />
+
+                <ActivityTimeline proposalId={proposal.id} />
 
             </div>
 

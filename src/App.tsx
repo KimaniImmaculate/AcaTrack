@@ -14,6 +14,7 @@ import PublicRoute from "./components/PublicRoute";
 // Role-based dashboards
 import StudentDashboard from "./pages/student/StudentDashboard";
 import SupervisorDashboard from "./pages/supervisor/SupervisorDashboard";
+import SupervisorProposals from "./pages/supervisor/SupervisorProposals";
 import SupervisorProposalDetail from "./pages/supervisor/SupervisorProposalDetail";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Users from "./pages/admin/Users";
@@ -108,6 +109,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["supervisor"]}>
               <SupervisorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/supervisor/assigned"
+          element={
+            <ProtectedRoute allowedRoles={["supervisor"]}>
+              <SupervisorProposals />
             </ProtectedRoute>
           }
         />

@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { db } from "../../services/firebase";
 import { Proposal } from "../../types/Proposal";
+import { UserProfile } from "../../types/User";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import StatusBadge from "../../components/StatusBadge";
+import ActivityTimeline from "../../components/ActivityTimeline";
+import CommentsList from "../../components/CommentsList";
 
+import { useAuth } from "../../contexts/AuthContext";
 import {
     startReview,
     requestRevision,
@@ -17,12 +21,15 @@ import {
 
 export default function SupervisorProposalDetail() {
 
+    const { user, profile } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [proposal, setProposal] = useState<Proposal | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [student, setStudent] = useState<UserProfile | null | "not_found">(null);
+    const [commentsText, setCommentsText] = useState("");
 
 
 
@@ -59,6 +66,25 @@ export default function SupervisorProposalDetail() {
 
 
     }, [id]);
+
+
+    // Fetch student profile when proposal loads
+    useEffect(() => {
+
+        const sid = proposal?.studentId;
+        if (!sid) { setStudent(null); return; }
+
+        getDoc(doc(db, "users", sid))
+            .then(snap => {
+                if (snap.exists()) {
+                    setStudent({ id: snap.id, ...snap.data() } as UserProfile);
+                } else {
+                    setStudent("not_found");
+                }
+            })
+            .catch(() => setStudent("not_found"));
+
+    }, [proposal?.studentId]);
 
 
 
@@ -175,12 +201,60 @@ export default function SupervisorProposalDetail() {
 
 
 
-                    <div className="mt-3">
+                    <div className="mt-3 flex items-center justify-between gap-4 flex-wrap">
+                        <StatusBadge status={proposal.status} />
+                        {proposal.updatedAt?.toDate && (
+                            <span className="text-xs text-gray-400">
+                                Last updated:{" "}
+                                {proposal.updatedAt.toDate().toLocaleDateString("en-US", {
+                                    day: "numeric", month: "long", year: "numeric"
+                                })}{" "}
+                                •{" "}
+                                {proposal.updatedAt.toDate().toLocaleTimeString("en-US", {
+                                    hour: "numeric", minute: "2-digit"
+                                })}
+                            </span>
+                        )}
+                    </div>
 
-                        <StatusBadge
-                            status={proposal.status}
-                        />
 
+                    {/* Student info */}
+                    <div className="mt-4 p-4 bg-gray-50 border rounded text-sm space-y-1">
+                        <p className="font-semibold text-gray-700 mb-1">Student</p>
+                        {student === null ? (
+                            <p className="text-gray-400">Loading student details...</p>
+                        ) : student === "not_found" ? (
+                            <p className="text-gray-500">Details not found</p>
+                        ) : (
+                            <>
+                                <p>
+                                    <span className="font-medium text-gray-600">Name: </span>
+                                    {student.firstName} {student.lastName}
+                                </p>
+                                <p>
+                                    <span className="font-medium text-gray-600">Admission No: </span>
+                                    {student.admissionNumber ?? "Details not found"}
+                                </p>
+                            </>
+                        )}
+                    </div>
+
+
+                    {/* Complete Proposal Document */}
+                    <div className="mt-4 p-4 bg-gray-50 border rounded text-sm space-y-1">
+                        <p className="font-semibold text-gray-700 mb-1">Complete Proposal Document</p>
+                        {proposal.documentURL ? (
+                            <a
+                                href={proposal.documentURL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center text-blue-600 hover:underline gap-1 mt-1 font-medium"
+                            >
+                                📄 View Complete Proposal Document
+                            </a>
+                        ) : (
+                            <p className="text-gray-500 italic">No document attached.</p>
+                        )}
                     </div>
 
 
@@ -206,7 +280,7 @@ export default function SupervisorProposalDetail() {
 
                         <section>
                             <h2 className="font-semibold">
-                                Abstract
+                                Abstract (Summary)
                             </h2>
 
                             <p>
@@ -219,7 +293,7 @@ export default function SupervisorProposalDetail() {
 
                         <section>
                             <h2 className="font-semibold">
-                                Problem Statement
+                                Problem Statement (Summary)
                             </h2>
 
                             <p>
@@ -232,7 +306,7 @@ export default function SupervisorProposalDetail() {
 
                         <section>
                             <h2 className="font-semibold">
-                                Objectives
+                                Objectives (Summary)
                             </h2>
 
                             <p>
@@ -245,7 +319,7 @@ export default function SupervisorProposalDetail() {
 
                         <section>
                             <h2 className="font-semibold">
-                                Methodology
+                                Methodology (Summary)
                             </h2>
 
                             <p>
@@ -258,7 +332,7 @@ export default function SupervisorProposalDetail() {
 
                         <section>
                             <h2 className="font-semibold">
-                                Expected Outcome
+                                Expected Outcome (Summary)
                             </h2>
 
                             <p>
@@ -287,8 +361,22 @@ export default function SupervisorProposalDetail() {
 
                     <hr className="my-6" />
 
-
-
+                    {(proposal.status === "submitted" ||
+                        proposal.status === "resubmitted" ||
+                        proposal.status === "under_review") && (
+                        <div className="mb-6 p-4 border rounded bg-yellow-50/10 space-y-2 max-w-xl">
+                            <label className="block text-sm font-semibold text-gray-700">
+                                Review Comments / Revision Feedback
+                            </label>
+                            <textarea
+                                className="w-full border rounded p-2 text-sm bg-white"
+                                rows={3}
+                                placeholder="Write the details of changes required (only sent when requesting revisions)..."
+                                value={commentsText}
+                                onChange={(e) => setCommentsText(e.target.value)}
+                            />
+                        </div>
+                    )}
 
                     {(proposal.status === "submitted" ||
                         proposal.status === "resubmitted") && (
@@ -298,11 +386,16 @@ export default function SupervisorProposalDetail() {
 
                                 <button
                                     disabled={actionLoading}
-                                    onClick={() =>
+                                    onClick={() => {
+                                        if (!user) return;
                                         handleAction(() =>
-                                            startReview(proposal)
-                                        )
-                                    }
+                                            startReview(proposal, {
+                                                uid: user.uid,
+                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+                                                role: "supervisor"
+                                            })
+                                        );
+                                    }}
                                     className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
                                 >
                                     Start Review
@@ -313,14 +406,20 @@ export default function SupervisorProposalDetail() {
 
                                 <button
                                     disabled={actionLoading}
-                                    onClick={() =>
-                                        handleAction(() =>
-                                            requestRevision(proposal)
-                                        )
-                                    }
+                                    onClick={() => {
+                                        if (!user) return;
+                                        handleAction(async () => {
+                                            await requestRevision(proposal, {
+                                                uid: user.uid,
+                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+                                                role: "supervisor"
+                                            }, commentsText);
+                                            setCommentsText("");
+                                        });
+                                    }}
                                     className="px-4 py-2 bg-yellow-500 text-white rounded disabled:bg-gray-400"
                                 >
-                                    Request Revision
+                                    Request Revisions & Send Comments
                                 </button>
 
 
@@ -328,11 +427,16 @@ export default function SupervisorProposalDetail() {
 
                                 <button
                                     disabled={actionLoading}
-                                    onClick={() =>
+                                    onClick={() => {
+                                        if (!user) return;
                                         handleAction(() =>
-                                            rejectProposal(proposal)
-                                        )
-                                    }
+                                            rejectProposal(proposal, {
+                                                uid: user.uid,
+                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+                                                role: "supervisor"
+                                            })
+                                        );
+                                    }}
                                     className="px-4 py-2 bg-red-600 text-white rounded disabled:bg-gray-400"
                                 >
                                     Reject
@@ -357,11 +461,16 @@ export default function SupervisorProposalDetail() {
 
                             <button
                                 disabled={actionLoading}
-                                onClick={() =>
+                                onClick={() => {
+                                    if (!user) return;
                                     handleAction(() =>
-                                        approveProposal(proposal)
-                                    )
-                                }
+                                        approveProposal(proposal, {
+                                            uid: user.uid,
+                                            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+                                            role: "supervisor"
+                                        })
+                                    );
+                                }}
                                 className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-400"
                             >
                                 Approve
@@ -372,14 +481,20 @@ export default function SupervisorProposalDetail() {
 
                             <button
                                 disabled={actionLoading}
-                                onClick={() =>
-                                    handleAction(() =>
-                                        requestRevision(proposal)
-                                    )
-                                }
+                                onClick={() => {
+                                    if (!user) return;
+                                    handleAction(async () => {
+                                        await requestRevision(proposal, {
+                                            uid: user.uid,
+                                            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+                                            role: "supervisor"
+                                        }, commentsText);
+                                        setCommentsText("");
+                                    });
+                                }}
                                 className="px-4 py-2 bg-yellow-500 text-white rounded disabled:bg-gray-400"
                             >
-                                Request Revision
+                                Request Revisions & Send Comments
                             </button>
 
 
@@ -387,11 +502,16 @@ export default function SupervisorProposalDetail() {
 
                             <button
                                 disabled={actionLoading}
-                                onClick={() =>
+                                onClick={() => {
+                                    if (!user) return;
                                     handleAction(() =>
-                                        rejectProposal(proposal)
-                                    )
-                                }
+                                        rejectProposal(proposal, {
+                                            uid: user.uid,
+                                            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+                                            role: "supervisor"
+                                        })
+                                    );
+                                }}
                                 className="px-4 py-2 bg-red-600 text-white rounded disabled:bg-gray-400"
                             >
                                 Reject
@@ -447,6 +567,9 @@ export default function SupervisorProposalDetail() {
 
                 </div>
 
+                <CommentsList proposalId={proposal.id} />
+
+                <ActivityTimeline proposalId={proposal.id} />
 
             </div>
 

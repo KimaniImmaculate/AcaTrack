@@ -30,7 +30,7 @@ interface Notification {
 export default function NotificationBell() {
 
 
-    const { user } = useAuth();
+    const { user, role } = useAuth();
 
     const navigate = useNavigate();
 
@@ -141,9 +141,15 @@ export default function NotificationBell() {
 
         if (notification.proposalId) {
 
-            navigate(
-                `/student/proposals/${notification.proposalId}`
-            );
+            // Route to the correct detail page based on the logged-in user's role
+            const path =
+                role === "supervisor"
+                    ? `/supervisor/proposals/${notification.proposalId}`
+                    : role === "admin"
+                    ? `/admin/proposals/${notification.proposalId}`
+                    : `/student/proposals/${notification.proposalId}`;
+
+            navigate(path);
 
         }
 

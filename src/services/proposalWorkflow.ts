@@ -7,13 +7,15 @@ import {
 
 import { db } from "./firebase";
 import { createNotification } from "./notifications";
-import { createActivity } from "./activityService";
+import { createActivity, ActivityActor } from "./activityService";
 import { Proposal } from "../types/Proposal";
+import { saveComment } from "./commentService";
 
 
 
 export async function submitProposal(
-    proposal: Proposal
+    proposal: Proposal,
+    actor: ActivityActor
 ) {
 
     await updateDoc(
@@ -27,7 +29,8 @@ export async function submitProposal(
 
     await createActivity(
         proposal.id,
-        "Student submitted proposal for review."
+        "submitted the proposal for review.",
+        actor
     );
 
 
@@ -54,7 +57,8 @@ export async function submitProposal(
 
 
 export async function startReview(
-    proposal: Proposal
+    proposal: Proposal,
+    actor: ActivityActor
 ) {
 
 
@@ -70,7 +74,8 @@ export async function startReview(
 
     await createActivity(
         proposal.id,
-        "Supervisor started reviewing the proposal."
+        "started reviewing the proposal.",
+        actor
     );
 
 
@@ -91,7 +96,9 @@ export async function startReview(
 
 
 export async function requestRevision(
-    proposal: Proposal
+    proposal: Proposal,
+    actor: ActivityActor,
+    commentsText?: string
 ) {
 
 
@@ -103,11 +110,14 @@ export async function requestRevision(
         }
     );
 
-
+    if (commentsText && commentsText.trim()) {
+        await saveComment(proposal.id, commentsText, actor);
+    }
 
     await createActivity(
         proposal.id,
-        "Supervisor requested revisions."
+        "requested revisions and sent comments.",
+        actor
     );
 
 
@@ -116,7 +126,7 @@ export async function requestRevision(
         proposal.studentId,
         proposal.id,
         "Revision Requested",
-        "Your supervisor requested changes to your proposal."
+        "Revisions requested. Please review the comments and resubmit."
     );
 
 }
@@ -128,7 +138,8 @@ export async function requestRevision(
 
 
 export async function approveProposal(
-    proposal: Proposal
+    proposal: Proposal,
+    actor: ActivityActor
 ) {
 
 
@@ -144,7 +155,8 @@ export async function approveProposal(
 
     await createActivity(
         proposal.id,
-        "Proposal approved."
+        "approved the proposal.",
+        actor
     );
 
 
@@ -166,7 +178,8 @@ export async function approveProposal(
 
 
 export async function rejectProposal(
-    proposal: Proposal
+    proposal: Proposal,
+    actor: ActivityActor
 ) {
 
 
@@ -182,7 +195,8 @@ export async function rejectProposal(
 
     await createActivity(
         proposal.id,
-        "Proposal rejected."
+        "rejected the proposal.",
+        actor
     );
 
 
@@ -204,7 +218,9 @@ export async function rejectProposal(
 
 
 export async function resubmitProposal(
-    proposal: Proposal
+    proposal: Proposal,
+    actor: ActivityActor,
+    responseText?: string
 ) {
 
 
@@ -217,11 +233,14 @@ export async function resubmitProposal(
         }
     );
 
-
+    if (responseText && responseText.trim()) {
+        await saveComment(proposal.id, responseText, actor);
+    }
 
     await createActivity(
         proposal.id,
-        "Student resubmitted proposal."
+        "resubmitted the proposal with resolved comments.",
+        actor
     );
 
 
@@ -233,7 +252,7 @@ export async function resubmitProposal(
             proposal.supervisorId,
             proposal.id,
             "Proposal Resubmitted",
-            "A student has submitted a revised proposal."
+            "The student has resubmitted with resolved comments."
         );
 
 
@@ -249,7 +268,9 @@ export async function resubmitProposal(
 
 export async function assignSupervisor(
     proposal: Proposal,
-    supervisorId: string | null
+    supervisorId: string | null,
+    supervisorName: string | null,
+    actor: ActivityActor
 ) {
 
 
@@ -266,10 +287,9 @@ export async function assignSupervisor(
     await createActivity(
         proposal.id,
         supervisorId
-            ?
-            "Supervisor assigned."
-            :
-            "Supervisor removed."
+            ? `assigned ${supervisorName} as supervisor.`
+            : "removed the supervisor.",
+        actor
     );
 
 
