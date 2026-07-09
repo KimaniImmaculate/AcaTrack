@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -9,7 +9,6 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import StatusBadge from "../../components/StatusBadge";
 import ActivityTimeline from "../../components/ActivityTimeline";
 import CommentsList from "../../components/CommentsList";
-
 import { useAuth } from "../../contexts/AuthContext";
 import {
     startReview,
@@ -18,9 +17,7 @@ import {
     rejectProposal
 } from "../../services/proposalWorkflow";
 
-
 export default function SupervisorProposalDetail() {
-
     const { user, profile } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
@@ -31,49 +28,25 @@ export default function SupervisorProposalDetail() {
     const [student, setStudent] = useState<UserProfile | null | "not_found">(null);
     const [commentsText, setCommentsText] = useState("");
 
-
-
     useEffect(() => {
-
         if (!id) return;
-
-
         const unsubscribe = onSnapshot(
             doc(db, "proposals", id),
             (snapshot) => {
-
                 if (snapshot.exists()) {
-
-                    setProposal({
-                        id: snapshot.id,
-                        ...(snapshot.data() as Omit<Proposal, "id">),
-                    });
-
+                    setProposal({ id: snapshot.id, ...(snapshot.data() as Omit<Proposal, "id">) });
                 } else {
-
                     setProposal(null);
-
                 }
-
-
                 setLoading(false);
-
             }
         );
-
-
         return () => unsubscribe();
-
-
     }, [id]);
 
-
-    // Fetch student profile when proposal loads
     useEffect(() => {
-
         const sid = proposal?.studentId;
         if (!sid) { setStudent(null); return; }
-
         getDoc(doc(db, "users", sid))
             .then(snap => {
                 if (snap.exists()) {
@@ -83,128 +56,74 @@ export default function SupervisorProposalDetail() {
                 }
             })
             .catch(() => setStudent("not_found"));
-
     }, [proposal?.studentId]);
 
-
-
-
-    const handleAction = async (
-        action: () => Promise<void>
-    ) => {
-
-        try {
-
-            setActionLoading(true);
-
-            await action();
-
-        } catch (error) {
-
-            console.error(
-                "Workflow error:",
-                error
-            );
-
-            alert(
-                "Something went wrong while updating the proposal."
-            );
-
-        } finally {
-
-            setActionLoading(false);
-
-        }
-
+    const actorDetails = {
+        uid: user?.uid ?? "",
+        name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+        role: "supervisor" as const
     };
 
-
-
-
+    const handleAction = async (action: () => Promise<void>) => {
+        try {
+            setActionLoading(true);
+            await action();
+        } catch (error) {
+            console.error("Workflow error:", error);
+            alert("Something went wrong while updating the proposal.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     if (loading) {
-
         return (
-
             <DashboardLayout>
-
-                <div className="p-6">
-                    Loading proposal...
-                </div>
-
+                <div className="p-6 text-center text-slate-400 font-semibold">Loading proposal...</div>
             </DashboardLayout>
-
         );
-
     }
-
-
-
 
     if (!proposal) {
-
         return (
-
             <DashboardLayout>
-
-                <div className="p-6">
-
-                    <p className="text-red-600">
-                        Proposal not found.
-                    </p>
-
-
+                <div className="p-6 text-center space-y-4">
+                    <p className="text-red-500 font-semibold">Proposal not found.</p>
                     <button
                         onClick={() => navigate("/supervisor")}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-5 py-2.5 rounded-xl cursor-pointer"
                     >
-                        Back
+                        Back to Dashboard
                     </button>
-
-
                 </div>
-
             </DashboardLayout>
-
         );
-
     }
 
-
-
-
-
     return (
-
         <DashboardLayout>
+            <div className="max-w-4xl mx-auto space-y-8">
 
-
-            <div className="max-w-5xl mx-auto space-y-6">
-
-
+                {/* Back link */}
                 <button
                     onClick={() => navigate("/supervisor")}
-                    className="text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
                 >
-                    ← Back to Dashboard
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to Dashboard
                 </button>
 
-
-
-
-                <div className="bg-white border rounded-lg shadow p-6">
-
-
-                    <h1 className="text-3xl font-bold">
+                {/* Title Header Card */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-850 tracking-tight leading-snug">
                         {proposal.title}
                     </h1>
-
-
-
-                    <div className="mt-3 flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center justify-between gap-4 flex-wrap border-t border-slate-100 pt-4">
                         <StatusBadge status={proposal.status} />
                         {proposal.updatedAt?.toDate && (
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-slate-400 font-medium">
                                 Last updated:{" "}
                                 {proposal.updatedAt.toDate().toLocaleDateString("en-US", {
                                     day: "numeric", month: "long", year: "numeric"
@@ -216,366 +135,167 @@ export default function SupervisorProposalDetail() {
                             </span>
                         )}
                     </div>
+                </div>
 
-
-                    {/* Student info */}
-                    <div className="mt-4 p-4 bg-gray-50 border rounded text-sm space-y-1">
-                        <p className="font-semibold text-gray-700 mb-1">Student</p>
+                {/* Student & Document Meta */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Student Info */}
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-3">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Student</h3>
                         {student === null ? (
-                            <p className="text-gray-400">Loading student details...</p>
+                            <p className="text-slate-400 text-sm font-semibold">Loading student details...</p>
                         ) : student === "not_found" ? (
-                            <p className="text-gray-500">Details not found</p>
+                            <p className="text-slate-500 text-sm font-semibold">Details not found</p>
                         ) : (
-                            <>
-                                <p>
-                                    <span className="font-medium text-gray-600">Name: </span>
+                            <div className="space-y-1.5">
+                                <p className="text-slate-800 font-bold text-sm">
                                     {student.firstName} {student.lastName}
                                 </p>
-                                <p>
-                                    <span className="font-medium text-gray-600">Admission No: </span>
-                                    {student.admissionNumber ?? "Details not found"}
+                                <p className="text-slate-400 text-xs font-medium">
+                                    Admission No: {student.admissionNumber ?? "—"}
                                 </p>
-                            </>
+                                <p className="text-slate-400 text-xs font-medium">
+                                    {student.department || "General Department"}
+                                </p>
+                            </div>
                         )}
                     </div>
 
-
-                    {/* Complete Proposal Document */}
-                    <div className="mt-4 p-4 bg-gray-50 border rounded text-sm space-y-1">
-                        <p className="font-semibold text-gray-700 mb-1">Complete Proposal Document</p>
+                    {/* Document */}
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-3">
+                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Proposal Document</h3>
                         {proposal.documentURL ? (
                             <a
                                 href={proposal.documentURL}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:underline gap-1 mt-1 font-medium"
+                                className="inline-flex items-center text-amber-600 hover:text-amber-700 font-bold text-sm hover:underline gap-1.5"
                             >
-                                📄 View Complete Proposal Document
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                View Proposal Document
                             </a>
                         ) : (
-                            <p className="text-gray-500 italic">No document attached.</p>
+                            <p className="text-slate-400 text-sm font-semibold">No document attached.</p>
                         )}
                     </div>
+                </div>
 
-
-
-                    <hr className="my-6" />
-
-
-
+                {/* Proposal Content */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-sm">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-4 mb-6">
+                        Proposal Specifications
+                    </h3>
                     <div className="space-y-6">
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Department
-                            </h2>
-
-                            <p>
-                                {proposal.department}
-                            </p>
-                        </section>
-
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Abstract (Summary)
-                            </h2>
-
-                            <p>
-                                {proposal.abstract}
-                            </p>
-                        </section>
-
-
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Problem Statement (Summary)
-                            </h2>
-
-                            <p>
-                                {proposal.problemStatement}
-                            </p>
-                        </section>
-
-
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Objectives (Summary)
-                            </h2>
-
-                            <p>
-                                {proposal.objectives}
-                            </p>
-                        </section>
-
-
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Methodology (Summary)
-                            </h2>
-
-                            <p>
-                                {proposal.methodology}
-                            </p>
-                        </section>
-
-
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Expected Outcome (Summary)
-                            </h2>
-
-                            <p>
-                                {proposal.expectedOutcome}
-                            </p>
-                        </section>
-
-
-
-                        <section>
-                            <h2 className="font-semibold">
-                                Version
-                            </h2>
-
-                            <p>
-                                {proposal.version}
-                            </p>
-                        </section>
-
-
+                        {[
+                            { label: "Department", value: proposal.department },
+                            { label: "Abstract", value: proposal.abstract },
+                            { label: "Problem Statement", value: proposal.problemStatement },
+                            { label: "Objectives", value: proposal.objectives },
+                            { label: "Methodology", value: proposal.methodology },
+                            { label: "Expected Outcome", value: proposal.expectedOutcome },
+                            { label: "Version", value: String(proposal.version) },
+                        ].map((field) => (
+                            <div key={field.label} className="space-y-1.5">
+                                <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    {field.label}
+                                </span>
+                                <p className="text-slate-700 text-sm leading-relaxed bg-slate-50/50 border border-slate-100 rounded-xl p-4 whitespace-pre-line">
+                                    {field.value || "Not specified"}
+                                </p>
+                            </div>
+                        ))}
                     </div>
+                </div>
 
+                {/* Workflow Actions */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Review Actions</h3>
 
-
-
-
-                    <hr className="my-6" />
-
-                    {(proposal.status === "submitted" ||
-                        proposal.status === "resubmitted" ||
-                        proposal.status === "under_review") && (
-                        <div className="mb-6 p-4 border rounded bg-yellow-50/10 space-y-2 max-w-xl">
-                            <label className="block text-sm font-semibold text-gray-700">
-                                Review Comments / Revision Feedback
-                            </label>
-                            <textarea
-                                className="w-full border rounded p-2 text-sm bg-white"
-                                rows={3}
-                                placeholder="Write the details of changes required (only sent when requesting revisions)..."
-                                value={commentsText}
-                                onChange={(e) => setCommentsText(e.target.value)}
-                            />
-                        </div>
-                    )}
-
-                    {(proposal.status === "submitted" ||
-                        proposal.status === "resubmitted") && (
+                    {(proposal.status === "submitted" || proposal.status === "resubmitted" || proposal.status === "under_review") && (
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
+                                    Review Comments / Revision Feedback
+                                </label>
+                                <textarea
+                                    className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
+                                    rows={3}
+                                    placeholder="Write the details of changes required (only sent when requesting revisions)..."
+                                    value={commentsText}
+                                    onChange={(e) => setCommentsText(e.target.value)}
+                                />
+                            </div>
 
                             <div className="flex gap-3 flex-wrap">
+                                {(proposal.status === "submitted" || proposal.status === "resubmitted") && (
+                                    <button
+                                        disabled={actionLoading}
+                                        onClick={() => handleAction(() => startReview(proposal, actorDetails))}
+                                        className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+                                    >
+                                        Start Review
+                                    </button>
+                                )}
 
+                                {proposal.status === "under_review" && (
+                                    <button
+                                        disabled={actionLoading}
+                                        onClick={() => handleAction(() => approveProposal(proposal, actorDetails))}
+                                        className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+                                    >
+                                        Approve Proposal
+                                    </button>
+                                )}
 
                                 <button
                                     disabled={actionLoading}
-                                    onClick={() => {
-                                        if (!user) return;
-                                        handleAction(() =>
-                                            startReview(proposal, {
-                                                uid: user.uid,
-                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
-                                                role: "supervisor"
-                                            })
-                                        );
-                                    }}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
+                                    onClick={() => handleAction(async () => {
+                                        await requestRevision(proposal, actorDetails, commentsText);
+                                        setCommentsText("");
+                                    })}
+                                    className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
                                 >
-                                    Start Review
+                                    Request Revisions
                                 </button>
 
-
-
-
                                 <button
                                     disabled={actionLoading}
-                                    onClick={() => {
-                                        if (!user) return;
-                                        handleAction(async () => {
-                                            await requestRevision(proposal, {
-                                                uid: user.uid,
-                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
-                                                role: "supervisor"
-                                            }, commentsText);
-                                            setCommentsText("");
-                                        });
-                                    }}
-                                    className="px-4 py-2 bg-yellow-500 text-white rounded disabled:bg-gray-400"
-                                >
-                                    Request Revisions & Send Comments
-                                </button>
-
-
-
-
-                                <button
-                                    disabled={actionLoading}
-                                    onClick={() => {
-                                        if (!user) return;
-                                        handleAction(() =>
-                                            rejectProposal(proposal, {
-                                                uid: user.uid,
-                                                name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
-                                                role: "supervisor"
-                                            })
-                                        );
-                                    }}
-                                    className="px-4 py-2 bg-red-600 text-white rounded disabled:bg-gray-400"
+                                    onClick={() => handleAction(() => rejectProposal(proposal, actorDetails))}
+                                    className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
                                 >
                                     Reject
                                 </button>
-
-
-
                             </div>
-
-                        )}
-
-
-
-
-
-
-
-                    {proposal.status === "under_review" && (
-
-                        <div className="flex gap-3 flex-wrap">
-
-
-                            <button
-                                disabled={actionLoading}
-                                onClick={() => {
-                                    if (!user) return;
-                                    handleAction(() =>
-                                        approveProposal(proposal, {
-                                            uid: user.uid,
-                                            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
-                                            role: "supervisor"
-                                        })
-                                    );
-                                }}
-                                className="px-4 py-2 bg-green-600 text-white rounded disabled:bg-gray-400"
-                            >
-                                Approve
-                            </button>
-
-
-
-
-                            <button
-                                disabled={actionLoading}
-                                onClick={() => {
-                                    if (!user) return;
-                                    handleAction(async () => {
-                                        await requestRevision(proposal, {
-                                            uid: user.uid,
-                                            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
-                                            role: "supervisor"
-                                        }, commentsText);
-                                        setCommentsText("");
-                                    });
-                                }}
-                                className="px-4 py-2 bg-yellow-500 text-white rounded disabled:bg-gray-400"
-                            >
-                                Request Revisions & Send Comments
-                            </button>
-
-
-
-
-                            <button
-                                disabled={actionLoading}
-                                onClick={() => {
-                                    if (!user) return;
-                                    handleAction(() =>
-                                        rejectProposal(proposal, {
-                                            uid: user.uid,
-                                            name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
-                                            role: "supervisor"
-                                        })
-                                    );
-                                }}
-                                className="px-4 py-2 bg-red-600 text-white rounded disabled:bg-gray-400"
-                            >
-                                Reject
-                            </button>
-
-
                         </div>
-
                     )}
-
-
-
-
-
 
                     {proposal.status === "revision_requested" && (
-
-                        <div className="p-4 bg-yellow-50 border rounded">
-
-                            Waiting for student to revise and resubmit.
-
+                        <div className="bg-amber-50/60 border border-amber-100 rounded-xl p-4 text-sm font-semibold text-amber-700">
+                            ⏳ Waiting for student to revise and resubmit.
                         </div>
-
                     )}
-
-
-
 
                     {proposal.status === "approved" && (
-
-                        <div className="p-4 bg-green-50 border rounded">
-
-                            Proposal approved successfully.
-
+                        <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4 text-sm font-semibold text-emerald-700">
+                            ✓ This proposal has been approved.
                         </div>
-
                     )}
-
-
-
 
                     {proposal.status === "rejected" && (
-
-                        <div className="p-4 bg-red-50 border rounded">
-
-                            Proposal rejected.
-
+                        <div className="bg-red-50/60 border border-red-100 rounded-xl p-4 text-sm font-semibold text-red-700">
+                            ✗ This proposal has been rejected.
                         </div>
-
                     )}
-
-
-
                 </div>
 
-                <CommentsList proposalId={proposal.id} />
-
-                <ActivityTimeline proposalId={proposal.id} />
-
+                {/* Comments & Activity */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <CommentsList proposalId={proposal.id} />
+                    <ActivityTimeline proposalId={proposal.id} />
+                </div>
             </div>
-
-
         </DashboardLayout>
-
     );
-
 }

@@ -24,6 +24,8 @@ import AdminProposalDetail from "./pages/admin/AdminProposalDetail";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import Reports from "./pages/admin/Reports";
 import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
+import Landing from "./pages/Landing";
 
 /**
  * MAIN APPLICATION ROUTER
@@ -203,13 +205,27 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "student",
+                "supervisor",
+                "admin"
+              ]}
+            >
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
         {/* =========================
             DEFAULT ROUTE
             Redirect everything unknown
         ========================== */}
 
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Landing />} />
 
       </Routes>
     </BrowserRouter>

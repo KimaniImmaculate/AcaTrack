@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 
 import { auth, db } from "../services/firebase";
 import { UserProfile } from "../types/User";
 
 type AuthContextType = {
-    user: User | null;
+    user: any;
     profile: UserProfile | null;
     role: "student" | "supervisor" | "admin" | null;
     loading: boolean;
@@ -20,14 +20,21 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [role, setRole] = useState<AuthContextType["role"]>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        let unsubProfile: (() => void) | undefined;
+
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
             setUser(firebaseUser);
+
+            if (unsubProfile) {
+                unsubProfile();
+                unsubProfile = undefined;
+            }
 
             if (!firebaseUser) {
                 setProfile(null);
@@ -37,18 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
 
             const ref = doc(db, "users", firebaseUser.uid);
-            const snap = await getDoc(ref);
-
-            if (snap.exists()) {
-                const data = snap.data() as UserProfile;
-                setProfile(data);
-                setRole(data.role);
-            }
-
-            setLoading(false);
+            unsubProfile = onSnapshot(ref, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data() as UserProfile;
+                    setProfile({ ...data, id: snap.id });
+                    setRole(data.role);
+                } else {
+                    setProfile(null);
+                    setRole(null);
+                }
+                setLoading(false);
+            }, (err) => {
+                console.error("Error listening to user profile:", err);
+                setLoading(false);
+            });
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            if (unsubProfile) unsubProfile();
+        };
     }, []);
 
     return (

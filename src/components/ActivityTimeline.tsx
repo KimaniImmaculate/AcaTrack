@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import {
     collection,
     query,
@@ -95,7 +95,7 @@ export default function ActivityTimeline({
 
                     <div
                         key={activity.id}
-                        className="border-l-4 border-blue-600 pl-4 py-3 bg-gray-50 rounded shadow-sm"
+                        className="border-l-4 border-amber-600 pl-4 py-3 bg-gray-50 rounded shadow-sm"
                     >
                         {activity.actor ? (
                             <>

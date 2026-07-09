@@ -5,21 +5,31 @@ type Props = {
 };
 
 export default function StatusBadge({ status }: Props) {
-    const base = "px-2 py-1 text-xs rounded font-medium";
+    const base = "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border transition-all duration-300";
 
     const styles: Record<string, string> = {
-        draft: "bg-gray-200 text-gray-700",
-        submitted: "bg-blue-100 text-blue-700",
-        under_review: "bg-yellow-100 text-yellow-700",
-        revision_requested: "bg-red-100 text-red-700",
-        resubmitted: "bg-purple-100 text-purple-700",
-        approved: "bg-green-100 text-green-700",
-        rejected: "bg-gray-300 text-gray-800",
+        draft:              "bg-slate-100 text-slate-600 border-slate-200/80",
+        submitted:          "bg-amber-100 text-amber-700 border-amber-200",
+        under_review:       "bg-yellow-50 text-yellow-700 border-yellow-200",
+        revision_requested: "bg-rose-50 text-rose-700 border-rose-100",
+        resubmitted:        "bg-amber-50 text-amber-600 border-amber-100",
+        approved:           "bg-emerald-50 text-emerald-700 border-emerald-100",
+        rejected:           "bg-slate-200 text-slate-700 border-slate-300",
+    };
+
+    const labelMap: Record<string, string> = {
+        draft: "Draft",
+        submitted: "Submitted",
+        under_review: "Under Review",
+        revision_requested: "Revision Requested",
+        resubmitted: "Resubmitted",
+        approved: "Approved",
+        rejected: "Rejected",
     };
 
     return (
-        <span className={`${base} ${styles[status] || "bg-gray-100"}`}>
-            {status.replace("_", " ")}
+        <span className={`${base} ${styles[status] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
+            {labelMap[status] || status.replace("_", " ")}
         </span>
     );
 }

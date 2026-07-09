@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { subscribeComments, Comment } from "../services/commentService";
 
 export default function CommentsList({ proposalId }: { proposalId: string }) {
@@ -44,8 +44,8 @@ export default function CommentsList({ proposalId }: { proposalId: string }) {
                                 isSupervisor
                                     ? "bg-green-50/40 border-green-200"
                                     : isAdmin
-                                    ? "bg-purple-50/40 border-purple-200"
-                                    : "bg-blue-50/30 border-blue-200"
+                                    ? "bg-amber-50/40 border-purple-200"
+                                    : "bg-amber-50/30 border-amber-200"
                             }`}
                         >
                             <div className="flex justify-between items-start gap-4">
@@ -58,8 +58,8 @@ export default function CommentsList({ proposalId }: { proposalId: string }) {
                                             isSupervisor
                                                 ? "bg-green-100 text-green-800"
                                                 : isAdmin
-                                                ? "bg-purple-100 text-purple-800"
-                                                : "bg-blue-100 text-blue-800"
+                                                ? "bg-amber-100 text-amber-800"
+                                                : "bg-amber-100 text-amber-800"
                                         }`}
                                     >
                                         {comment.authorRole}
