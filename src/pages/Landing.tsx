@@ -138,13 +138,19 @@ export default function Landing() {
         })
       });
 
-      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      let payload: { ok?: boolean; error?: string } | null = null;
+      try {
+        payload = (await response.json()) as { ok?: boolean; error?: string };
+      } catch {
+        payload = null;
+      }
 
-      if (!response.ok || payload?.ok === false) {
-        throw new Error(payload?.error ?? "Message could not be sent.");
+      if (!response.ok) {
+        throw new Error(payload?.error ?? `Request failed with status ${response.status}`);
       }
 
       event.currentTarget.reset();
+      setContactError("");
       setContactStatus("success");
     } catch {
       setContactStatus("error");
