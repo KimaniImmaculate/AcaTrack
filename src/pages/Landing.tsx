@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -7,6 +7,9 @@ export default function Landing() {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [contactStatus, setContactStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [contactError, setContactError] = useState("");
+  const contactEndpoint = import.meta.env.VITE_CONTACT_API_URL ?? "https://us-central1-acatrack.cloudfunctions.net/sendContactMessage";
 
   // Proposal Lifecycle Steps
   const workflowSteps = [
@@ -103,6 +106,52 @@ export default function Landing() {
     }
   };
 
+  const handleContactSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setContactStatus("submitting");
+    setContactError("");
+
+    const formData = new FormData(event.currentTarget);
+    const name = String(formData.get("name") ?? "").trim();
+    const email = String(formData.get("email") ?? "").trim();
+    const subject = String(formData.get("subject") ?? "").trim();
+    const message = String(formData.get("message") ?? "").trim();
+
+    if (!name || !email || !subject || !message) {
+      setContactStatus("error");
+      setContactError("Please fill in all fields before submitting.");
+      return;
+    }
+
+    try {
+      const response = await fetch(contactEndpoint, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          message
+        })
+      });
+
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error ?? "Message could not be sent.");
+      }
+
+      event.currentTarget.reset();
+      setContactStatus("success");
+    } catch {
+      setContactStatus("error");
+      setContactError("Message could not be sent. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-amber-500 selection:text-white">
       {/* BACKGROUND DECORATIONS */}
@@ -113,7 +162,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-amber-500 to-yellow-600 p-2 rounded-xl text-white shadow-md shadow-amber-500/20">
+            <div className="bg-linear-to-tr from-amber-500 to-yellow-600 p-2 rounded-xl text-white shadow-md shadow-amber-500/20">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 {/* Graduation Cap Top */}
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 L21 7 L12 11 L3 7 Z" />
@@ -123,7 +172,7 @@ export default function Landing() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 19 L10 14 L14 16 L19 11 M15 11 H19 V15" />
               </svg>
             </div>
-            <span className="text-xl font-extrabold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent tracking-tight">
+            <span className="text-xl font-extrabold bg-linear-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent tracking-tight">
               AcaTrack
             </span>
           </div>
@@ -139,7 +188,7 @@ export default function Landing() {
             {!loading && user ? (
               <button
                 onClick={() => navigate(getDashboardPath())}
-                className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-medium px-5 py-2 rounded-xl text-sm shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+                className="bg-linear-to-r from-amber-500 to-yellow-600 text-white font-medium px-5 py-2 rounded-xl text-sm shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 Go to Dashboard
               </button>
@@ -173,7 +222,7 @@ export default function Landing() {
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
               Manage Research Proposals{" "}
-              <span className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-400 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-amber-600 via-yellow-500 to-amber-400 bg-clip-text text-transparent">
                 With Absolute Ease
               </span>
             </h1>
@@ -183,7 +232,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-2">
               <button
                 onClick={handleCta}
-                className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-blue-700 hover:to-yellow-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all text-base"
+                className="w-full sm:w-auto bg-linear-to-r from-amber-500 to-yellow-600 hover:from-blue-700 hover:to-yellow-700 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all text-base"
               >
                 {!loading && user ? "Enter System Dashboard" : "Start Free Proposal Submission"}
               </button>
@@ -198,7 +247,7 @@ export default function Landing() {
 
           {/* DYNAMIC INTERACTIVE GLASS MOCKUP */}
           <div className="md:col-span-5 relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-purple-500 rounded-3xl blur-2xl opacity-10 animate-pulse" />
+            <div className="absolute inset-0 bg-linear-to-r from-amber-500 to-purple-500 rounded-3xl blur-2xl opacity-10 animate-pulse" />
             <div className="relative bg-white border border-slate-200/80 rounded-2xl shadow-2xl p-6 overflow-hidden">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                 <div className="flex items-center gap-2">
@@ -260,15 +309,15 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-800">
             <div className="space-y-2 py-4 sm:py-0">
-              <p className="text-4xl font-extrabold bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">1,248+</p>
+              <p className="text-4xl font-extrabold bg-linear-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">1,248+</p>
               <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Proposals Submitted</p>
             </div>
             <div className="space-y-2 py-4 sm:py-0">
-              <p className="text-4xl font-extrabold bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">98.4%</p>
+              <p className="text-4xl font-extrabold bg-linear-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">98.4%</p>
               <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Feedback Rate</p>
             </div>
             <div className="space-y-2 py-4 sm:py-0">
-              <p className="text-4xl font-extrabold bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">14 Days</p>
+              <p className="text-4xl font-extrabold bg-linear-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">14 Days</p>
               <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">Avg Approval Speed</p>
             </div>
           </div>
@@ -371,7 +420,7 @@ export default function Landing() {
             {/* Step Detail Display Panel */}
             <div className="lg:col-span-7">
               <div className="h-full bg-white border border-slate-200 rounded-2xl shadow-sm p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
-                <div className={`absolute top-0 right-0 w-36 h-36 bg-gradient-to-br ${workflowSteps[activeStep].accentBg} rounded-bl-full pointer-events-none`} />
+                <div className={`absolute top-0 right-0 w-36 h-36 bg-linear-to-br ${workflowSteps[activeStep].accentBg} rounded-bl-full pointer-events-none`} />
 
                 <div className="space-y-6 relative z-10">
                   <span className={`text-xs font-bold px-3 py-1 rounded-full ${workflowSteps[activeStep].badgeColor}`}>
@@ -427,15 +476,15 @@ export default function Landing() {
               <h3 className="text-lg font-bold text-slate-900">For Students</h3>
               <ul className="space-y-2 text-slate-500 text-xs sm:text-sm">
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Upload PDFs and drafts easily
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Read supervisor comments instantly
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Re-submit revised drafts easily
                 </li>
               </ul>
@@ -457,15 +506,15 @@ export default function Landing() {
               <h3 className="text-lg font-bold text-slate-900">For Supervisors</h3>
               <ul className="space-y-2 text-slate-500 text-xs sm:text-sm">
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   View assigned student lists
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Leave chronological review comments
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Set review status recommendation
                 </li>
               </ul>
@@ -487,15 +536,15 @@ export default function Landing() {
               <h3 className="text-lg font-bold text-slate-900">For Admins</h3>
               <ul className="space-y-2 text-slate-500 text-xs sm:text-sm">
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Assign expert reviews in seconds
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Inspect student and user databases
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Generate reports and metrics easily
                 </li>
               </ul>
@@ -548,43 +597,121 @@ export default function Landing() {
       </section>
 
       {/* BOTTOM CALL TO ACTION SECTION */}
-      <section className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 text-white py-16 text-center relative overflow-hidden">
-        <div className="absolute top-0 right-1/4 w-72 h-72 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
-          <h2 className="text-3xl font-extrabold sm:text-4xl tracking-tight">Ready to Digitize Your Proposal Workflows?</h2>
-          <p className="text-amber-100 text-base max-w-xl mx-auto">
-            Get started today by registering an account and tracking your research milestones.
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={handleCta}
-              className="bg-white text-amber-700 hover:bg-amber-50 font-bold px-8 py-3.5 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all text-base"
-            >
-              {!loading && user ? "Enter System Dashboard" : "Register a Free Account Now"}
-            </button>
+      <section className="bg-slate-50 py-16 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-8 lg:grid-cols-2 items-stretch">
+          <div className="rounded-3xl bg-linear-to-r from-amber-600 via-yellow-500 to-amber-700 text-white shadow-xl shadow-amber-900/10 p-8 sm:p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="relative z-10 h-full flex flex-col justify-center text-center lg:text-left space-y-6">
+              <h2 className="text-3xl font-extrabold sm:text-4xl tracking-tight">
+                Ready to Digitize Your Proposal Workflows?
+              </h2>
+              <p className="text-amber-100 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Get started today by registering an account and tracking your research milestones.
+              </p>
+              <div className="pt-2">
+                <button
+                  onClick={handleCta}
+                  className="bg-white text-amber-700 hover:bg-amber-50 font-bold px-8 py-3.5 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all text-base"
+                >
+                  {!loading && user ? "Enter System Dashboard" : "Register a Free Account Now"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="contact-me" className="rounded-3xl border border-slate-200 bg-white shadow-sm px-6 py-10 sm:px-10 sm:py-12 space-y-6">
+            <span className="inline-flex items-center rounded-full bg-amber-50 px-4 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-700">
+              Contact Me
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight text-center">
+              Need a solution customized for you?
+            </h2>
+            <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-center">
+              If you want a similar solution customized for you, I can do that. I can help tailor the workflow,
+              branding, and features to fit your exact needs.
+            </p>
+            <form onSubmit={handleContactSubmit} className="grid gap-4 pt-2">
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  placeholder="Your name"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-amber-500 focus:bg-white"
+                />
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="Your email"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-amber-500 focus:bg-white"
+                />
+              </div>
+
+              <input
+                type="text"
+                name="subject"
+                required
+                placeholder="Subject"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-amber-500 focus:bg-white"
+              />
+
+              <textarea
+                name="message"
+                required
+                rows={5}
+                placeholder="Tell me what you want customized for you..."
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-amber-500 focus:bg-white resize-none"
+              />
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="submit"
+                  disabled={contactStatus === "submitting"}
+                  className="inline-flex items-center justify-center bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-70 disabled:cursor-not-allowed font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all text-base"
+                >
+                  {contactStatus === "submitting" ? "Sending..." : "Send Message"}
+                </button>
+              </div>
+
+              {contactStatus === "success" && (
+                <p className="text-sm font-medium text-emerald-600 text-center sm:text-left">
+                  Message sent successfully.
+                </p>
+              )}
+
+              {contactStatus === "error" && (
+                <p className="text-sm font-medium text-red-600 text-center sm:text-left">
+                  {contactError}
+                </p>
+              )}
+            </form>
           </div>
         </div>
       </section>
 
       {/* FOOTER SECTION */}
-      <footer className="bg-slate-900 text-slate-500 py-12 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-slate-800 bg-slate-950 text-slate-400 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-slate-800 p-1.5 rounded-lg text-white">
+            <div className="rounded-xl border border-slate-800 bg-slate-900 p-2 text-white shadow-sm shadow-black/20">
               <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                {/* Graduation Cap Top */}
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 L21 7 L12 11 L3 7 Z" />
-                {/* Cap base */}
                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 8.5 V12.5 C7 14.5, 17 14.5, 17 12.5 V8.5" />
-                {/* Chart track line with arrow */}
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 19 L10 14 L14 16 L19 11 M15 11 H19 V15" />
               </svg>
             </div>
-            <span className="text-md font-bold text-slate-300">AcaTrack</span>
+            <div>
+              <div className="text-sm font-semibold text-slate-200">AcaTrack</div>
+              <div className="text-xs text-slate-500">Digital research proposal management</div>
+            </div>
           </div>
 
-          <div className="text-xs text-slate-400 text-center md:text-right">
-            &copy; 2026 AcaTrack Digital Research Proposal Management System. All rights reserved.
+          <div className="text-xs text-slate-500 md:text-right space-y-1.5">
+            <div>&copy; 2026 AcaTrack. All rights reserved.</div>
+            <div>
+              Made by <span className="font-semibold text-slate-300">Immaculate Kimani</span>
+            </div>
           </div>
         </div>
       </footer>
