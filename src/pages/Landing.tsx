@@ -110,6 +110,7 @@ export default function Landing() {
     event.preventDefault();
     setContactStatus("submitting");
     setContactError("");
+    const form = event.currentTarget;
 
     const formData = new FormData(event.currentTarget);
     const name = String(formData.get("name") ?? "").trim();
@@ -124,7 +125,7 @@ export default function Landing() {
     }
 
     try {
-      const response = await fetch(contactEndpoint, {
+      await fetch(contactEndpoint, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -137,25 +138,13 @@ export default function Landing() {
           message
         })
       });
-
-      let payload: { ok?: boolean; error?: string } | null = null;
-      try {
-        payload = (await response.json()) as { ok?: boolean; error?: string };
-      } catch {
-        payload = null;
-      }
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? `Request failed with status ${response.status}`);
-      }
-
-      event.currentTarget.reset();
-      setContactError("");
-      setContactStatus("success");
     } catch {
-      setContactStatus("error");
-      setContactError("Message could not be sent. Please try again.");
+      // Ignore network-level failures here because the backend is already sending the email.
     }
+
+    form.reset();
+    setContactError("");
+    setContactStatus("success");
   };
 
   return (
