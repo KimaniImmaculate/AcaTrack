@@ -138,8 +138,10 @@ export default function Landing() {
           message
         })
       });
-    } catch {
-      // Ignore network-level failures here because the backend is already sending the email.
+    } catch (err) {
+  console.error("Submission failed:", err); // <--- This will save your sanity
+  setContactStatus("error");
+  setContactError("Something went wrong on our end. Please try again later.");
     }
 
     form.reset();
