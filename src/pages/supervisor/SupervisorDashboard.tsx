@@ -166,13 +166,12 @@ export default function SupervisorDashboard() {
                                             {proposal.updatedAt?.toDate ? proposal.updatedAt.toDate().toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                                         </p>
                                     </div>
-                                    <span className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                        proposal.status === "approved" ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
-                                        proposal.status === "rejected" ? "bg-red-50 text-red-700 border border-red-100" :
-                                        proposal.status === "under_review" ? "bg-amber-50 text-amber-700 border border-amber-100" :
-                                        proposal.status === "submitted" || proposal.status === "resubmitted" ? "bg-amber-50 text-amber-700 border border-amber-100" :
-                                        "bg-slate-50 text-slate-500 border border-slate-100"
-                                    }`}>
+                                    <span className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${proposal.status === "approved" ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
+                                            proposal.status === "rejected" ? "bg-red-50 text-red-700 border border-red-100" :
+                                                proposal.status === "under_review" ? "bg-amber-50 text-amber-700 border border-amber-100" :
+                                                    proposal.status === "submitted" || proposal.status === "resubmitted" ? "bg-amber-50 text-amber-700 border border-amber-100" :
+                                                        "bg-slate-50 text-slate-500 border border-slate-100"
+                                        }`}>
                                         {proposal.status.replace("_", " ")}
                                     </span>
                                 </div>

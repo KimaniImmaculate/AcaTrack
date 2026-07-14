@@ -8,32 +8,44 @@ import { useAuth } from "../../contexts/AuthContext";
 import AcademicProgressBar from "../../components/AcademicProgressBar";
 import { useAcademicCalendar } from "../../hooks/useAcademicCalendar";
 import { saveAcademicCalendar } from "../../services/academicCalendarService";
+import { getWorkflowHealth } from "../../ai/services/workflowHealth";
+import { WorkflowHealth } from "../../ai/types";
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { calendar, loading: calLoading } = useAcademicCalendar();
 
-    const [users,     setUsers]     = useState<any[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [proposals, setProposals] = useState<any[]>([]);
 
     // Calendar form state
     const [calForm, setCalForm] = useState({
         proposalStartDate: "",
-        proposalDueDate:   "",
-        reviewDueDate:     "",
+        proposalDueDate: "",
+        reviewDueDate: "",
     });
     const [calSaving, setCalSaving] = useState(false);
-    const [calSaved,  setCalSaved]  = useState(false);
-    const [calOpen,   setCalOpen]   = useState(false);
+    const [calSaved, setCalSaved] = useState(false);
+    const [calOpen, setCalOpen] = useState(false);
+    const [workflowHealth, setWorkflowHealth] =
+        useState<WorkflowHealth | null>(null);
+    useEffect(() => {
+        async function loadInsights() {
+            const health = await getWorkflowHealth();
+            setWorkflowHealth(health);
+        }
+
+        loadInsights();
+    }, []);
 
     // Populate form from Firestore whenever calendar loads/changes
     useEffect(() => {
         if (calendar) {
             setCalForm({
                 proposalStartDate: calendar.proposalStartDate,
-                proposalDueDate:   calendar.proposalDueDate,
-                reviewDueDate:     calendar.reviewDueDate,
+                proposalDueDate: calendar.proposalDueDate,
+                reviewDueDate: calendar.reviewDueDate,
             });
         }
     }, [calendar]);
@@ -52,13 +64,12 @@ export default function AdminDashboard() {
         return () => unsubscribe();
     }, []);
 
-    const students    = users.filter(u => u.role === "student");
+    const students = users.filter(u => u.role === "student");
     const supervisors = users.filter(u => u.role === "supervisor");
-    const approved    = proposals.filter(p => p.status === "approved");
-    const pending     = proposals.filter(p =>
+    const approved = proposals.filter(p => p.status === "approved");
+    const pending = proposals.filter(p =>
         p.status === "submitted" || p.status === "resubmitted" || p.status === "under_review"
     );
-
     const handleSaveCalendar = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
@@ -70,6 +81,8 @@ export default function AdminDashboard() {
         setCalOpen(false);
         setTimeout(() => setCalSaved(false), 3000);
     };
+
+
 
     const quickActions = [
         {

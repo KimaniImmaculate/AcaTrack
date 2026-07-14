@@ -7,7 +7,6 @@ import Register from "./pages/auth/Register";
 import NewProposal from "./pages/student/NewProposal";
 import Proposals from "./pages/student/Proposals";
 import ProposalDetail from "./pages/student/ProposalDetail";
-
 // Role-protected wrapper component
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -25,6 +24,7 @@ import AdminProposalDetail from "./pages/admin/AdminProposalDetail";
 import AdminUserDetail from "./pages/admin/AdminUserDetail";
 import Reports from "./pages/admin/Reports";
 import Notifications from "./pages/Notifications";
+import AIInsights from "./pages/admin/AIAnalytics";
 import Profile from "./pages/Profile";
 import Landing from "./pages/Landing";
 
@@ -115,6 +115,7 @@ export default function App() {
           }
         />
 
+
         {/* SUPERVISOR DASHBOARD */}
         <Route
           path="/supervisor"
@@ -140,6 +141,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
 
         {/* ADMIN DASHBOARD */}
         <Route
@@ -198,6 +200,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/ai-analytics"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AIInsights />
             </ProtectedRoute>
           }
         />
