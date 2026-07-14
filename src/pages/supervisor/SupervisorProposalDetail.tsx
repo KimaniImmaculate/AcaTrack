@@ -10,7 +10,8 @@ import StatusBadge from "../../components/StatusBadge";
 import ActivityTimeline from "../../components/ActivityTimeline";
 import CommentsList from "../../components/CommentsList";
 import { useAuth } from "../../contexts/AuthContext";
-import RevisionComplianceCard from "../../ai/components/RevisionComplianceCard";
+import ReviewAssistantCard from "../../ai/components/ReviewAssistantCard";
+
 
 import {
     startReview,
@@ -184,12 +185,7 @@ export default function SupervisorProposalDetail() {
                     </div>
                 </div>
 
-                {/* AI Revision Compliance Card */}
-                {(proposal.status === "resubmitted" || proposal.status === "under_review") && proposal.version > 1 && (
-                    <RevisionComplianceCard
-                        proposalId={proposal.id}
-                    />
-                )}
+
 
                 {/* Proposal Content */}
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-sm">
@@ -305,7 +301,11 @@ export default function SupervisorProposalDetail() {
                     <CommentsList proposalId={proposal.id} />
                     <ActivityTimeline proposalId={proposal.id} />
                 </div>
+                <ReviewAssistantCard proposalId={proposal.id} />
+
             </div>
+
+
         </DashboardLayout>
     );
 }

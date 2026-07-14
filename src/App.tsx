@@ -27,6 +27,15 @@ import Notifications from "./pages/Notifications";
 import AIInsights from "./pages/admin/AIAnalytics";
 import Profile from "./pages/Profile";
 import Landing from "./pages/Landing";
+import ScheduleMeeting from "./pages/student/ScheduleMeeting";
+
+import StudentMeetings from "./pages/student/MyMeetings";
+
+import MeetingRequests from "./pages/supervisor/MeetingRequests";
+
+import SupervisorMeetings from "./pages/supervisor/MyMeetings";
+
+import AddMeetingLink from "./pages/student/AddMeetingLink";
 
 /**
  * MAIN APPLICATION ROUTER
@@ -114,6 +123,27 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+
+          path="/student/proposals/:proposalId/schedule"
+
+          element={<ScheduleMeeting />}
+
+        />
+        <Route
+
+          path="/student/meetings"
+
+          element={<StudentMeetings />}
+
+        />
+        <Route
+
+          path="/student/meetings/:meetingId/add-link"
+
+          element={<AddMeetingLink />}
+
+        />
 
 
         {/* SUPERVISOR DASHBOARD */}
@@ -140,6 +170,22 @@ export default function App() {
               <SupervisorProposalDetail />
             </ProtectedRoute>
           }
+        />
+        <Route
+
+          path="/supervisor/meeting-requests"
+
+          element={<MeetingRequests />}
+
+        />
+
+
+        <Route
+
+          path="/supervisor/meetings"
+
+          element={<SupervisorMeetings />}
+
         />
 
 

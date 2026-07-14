@@ -28,7 +28,7 @@ export default function CommentsList({ proposalId }: { proposalId: string }) {
     return (
         <div className="mt-8 border rounded-lg bg-white p-6 shadow-sm">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                💬 Review Feedback & Comments
+                Review Feedback & Comments
             </h2>
 
             <div className="space-y-4">
@@ -40,13 +40,12 @@ export default function CommentsList({ proposalId }: { proposalId: string }) {
                     return (
                         <div
                             key={comment.id}
-                            className={`p-4 rounded-lg border ${
-                                isSupervisor
+                            className={`p-4 rounded-lg border ${isSupervisor
                                     ? "bg-green-50/40 border-green-200"
                                     : isAdmin
-                                    ? "bg-amber-50/40 border-purple-200"
-                                    : "bg-amber-50/30 border-amber-200"
-                            }`}
+                                        ? "bg-amber-50/40 border-purple-200"
+                                        : "bg-amber-50/30 border-amber-200"
+                                }`}
                         >
                             <div className="flex justify-between items-start gap-4">
                                 <div>
@@ -54,13 +53,12 @@ export default function CommentsList({ proposalId }: { proposalId: string }) {
                                         {comment.authorName}
                                     </span>
                                     <span
-                                        className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded capitalize ${
-                                            isSupervisor
+                                        className={`ml-2 text-xs font-semibold px-2 py-0.5 rounded capitalize ${isSupervisor
                                                 ? "bg-green-100 text-green-800"
                                                 : isAdmin
-                                                ? "bg-amber-100 text-amber-800"
-                                                : "bg-amber-100 text-amber-800"
-                                        }`}
+                                                    ? "bg-amber-100 text-amber-800"
+                                                    : "bg-amber-100 text-amber-800"
+                                            }`}
                                     >
                                         {comment.authorRole}
                                     </span>

@@ -64,25 +64,57 @@ export interface AIRecommendation {
 }
 
 /* ===========================
-   REVISION COMPLIANCE
+   REVIEW ASSISTANT
 =========================== */
 
-export interface ComplianceCheck {
+export interface ReviewCheck {
 
-    request: string;
+    title: string;
 
-    result: "completed" | "partial" | "missing";
+    status: "completed" | "partial" | "missing";
 
     comment: string;
 
 }
 
-export interface RevisionCompliance {
+export interface ChangeSummary {
+
+    section: string;
+
+    change: string;
+
+}
+
+export interface ReviewAssistant {
 
     score: number;
 
+    summary: string;
+
     recommendation: string;
 
-    checks: ComplianceCheck[];
+    changes: ChangeSummary[];
+
+    checks: ReviewCheck[];
+
+}
+
+/* ===========================
+   PROGRESS COACH
+=========================== */
+
+export interface ProgressCoach {
+
+    progress: number;
+
+    currentStage: string;
+
+    estimatedCompletion: string;
+
+    nextMilestone: string;
+
+    motivation: string;
+
+    suggestions: string[];
 
 }

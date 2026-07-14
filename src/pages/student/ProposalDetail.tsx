@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { doc, onSnapshot, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
-
+import { useParams, useNavigate } from "react-router-dom";
+import {
+    doc,
+    onSnapshot,
+    updateDoc,
+    serverTimestamp,
+    getDoc,
+    collection,
+    query,
+    where
+} from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { Proposal } from "../../types/Proposal";
 import { UserProfile } from "../../types/User";
@@ -16,6 +24,7 @@ import CommentsList from "../../components/CommentsList";
 export default function ProposalDetail() {
     const { user, profile } = useAuth();
     const { id } = useParams();
+    const navigate = useNavigate();
 
     const [proposal, setProposal] = useState<Proposal | null>(null);
     const [loading, setLoading] = useState(true);
@@ -23,6 +32,7 @@ export default function ProposalDetail() {
     const [file, setFile] = useState<File | null>(null);
     const [responseText, setResponseText] = useState("");
     const [editing, setEditing] = useState(false);
+    const [meeting, setMeeting] = useState<any>(null);
 
     const [form, setForm] = useState({
         title: "",
@@ -129,6 +139,48 @@ export default function ProposalDetail() {
         );
     }
 
+    useEffect(() => {
+
+        if (!proposal?.id) return;
+
+
+        const q = query(
+            collection(db, "meetings"),
+            where(
+                "proposalId",
+                "==",
+                proposal.id
+            )
+        );
+
+
+        const unsubscribe = onSnapshot(
+            q,
+            snapshot => {
+
+                if (!snapshot.empty) {
+
+                    const meetingDoc = snapshot.docs[0];
+
+                    setMeeting({
+                        id: meetingDoc.id,
+                        ...meetingDoc.data()
+                    });
+
+                } else {
+
+                    setMeeting(null);
+
+                }
+
+            }
+        );
+
+
+        return () => unsubscribe();
+
+    }, [proposal?.id]);
+
     return (
         <DashboardLayout>
             <div className="max-w-4xl mx-auto space-y-8">
@@ -174,29 +226,127 @@ export default function ProposalDetail() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Supervisor Card */}
                     <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-3">
+
                         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                             Assigned Supervisor
                         </h3>
+
                         <div className="text-sm space-y-1">
+
                             {proposal.supervisorId ? (
+
                                 supervisor === null ? (
-                                    <p className="text-slate-400">Loading supervisor details...</p>
+
+                                    <p className="text-slate-400">
+                                        Loading supervisor details...
+                                    </p>
+
                                 ) : supervisor === "not_found" ? (
-                                    <p className="text-slate-500 font-semibold">Details not found</p>
+
+                                    <p className="text-slate-500 font-semibold">
+                                        Details not found
+                                    </p>
+
                                 ) : (
-                                    <div className="space-y-1.5">
-                                        <p className="text-slate-800 font-bold">
-                                            {supervisor.firstName} {supervisor.lastName}
-                                        </p>
-                                        <p className="text-slate-500 text-xs font-medium">
-                                            {supervisor.department || "General Department"}
-                                        </p>
+
+                                    <div className="space-y-3">
+
+                                        <div className="space-y-1.5">
+
+                                            <p className="text-slate-800 font-bold">
+                                                {supervisor.firstName} {supervisor.lastName}
+                                            </p>
+
+                                            <p className="text-slate-500 text-xs font-medium">
+                                                {supervisor.department || "General Department"}
+                                            </p>
+
+                                        </div>
+
+
+                                        {
+                                            !meeting &&
+
+                                            ["submitted", "approved", "revision_requested"]
+                                                .includes(proposal.status) && (
+
+                                                <button
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/student/proposals/${proposal.id}/schedule`
+                                                        )
+                                                    }
+                                                    className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl"
+                                                >
+                                                    Schedule Meeting
+                                                </button>
+
+                                            )
+                                        }
+
+
+
+                                        {
+                                            meeting?.status === "approved_waiting_link" && (
+
+                                                <button
+
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/student/meetings/${meeting.id}/add-link`
+                                                        )
+                                                    }
+
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl"
+
+                                                >
+
+                                                    Add Meeting Link
+
+                                                </button>
+
+                                            )
+                                        }
+
+
+
+                                        {
+                                            meeting?.status === "scheduled" && (
+
+                                                <a
+
+                                                    href={meeting.meetingLink}
+
+                                                    target="_blank"
+
+                                                    rel="noopener noreferrer"
+
+                                                    className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl"
+
+                                                >
+
+                                                    Join Meeting
+
+                                                </a>
+
+                                            )
+                                        }
+
+
                                     </div>
+
                                 )
+
                             ) : (
-                                <p className="text-slate-400 font-semibold">No supervisor assigned yet.</p>
+
+                                <p className="text-slate-400 font-semibold">
+                                    No supervisor assigned yet.
+                                </p>
+
                             )}
+
                         </div>
+
                     </div>
 
                     {/* Document Card */}
@@ -261,7 +411,7 @@ export default function ProposalDetail() {
                                 <button
                                     onClick={saveChanges}
                                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md shadow-emerald-600/10 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
-                               >
+                                >
                                     Save Changes
                                 </button>
                                 <button

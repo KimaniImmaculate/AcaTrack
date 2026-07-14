@@ -9,10 +9,10 @@ import StatCard from "../../components/dashboard/StatCard";
 import AcademicProgressBar from "../../components/AcademicProgressBar";
 import { useAcademicCalendar } from "../../hooks/useAcademicCalendar";
 import { Proposal } from "../../types/Proposal";
+import ProgressCoachCard from "../../ai/components/ProgressCoachCard";
 
 export default function StudentDashboard() {
-    const { user } = useAuth();
-    const navigate = useNavigate();
+    const { user, profile } = useAuth(); const navigate = useNavigate();
     const { calendar } = useAcademicCalendar();
 
     const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -38,31 +38,39 @@ export default function StudentDashboard() {
     }, [user]);
 
     const stats = {
-        total:     proposals.length,
-        draft:     proposals.filter(p => p.status === "draft").length,
+        total: proposals.length,
+        draft: proposals.filter(p => p.status === "draft").length,
         submitted: proposals.filter(p => p.status === "submitted").length,
-        approved:  proposals.filter(p => p.status === "approved").length,
-        rejected:  proposals.filter(p => p.status === "rejected").length,
+        approved: proposals.filter(p => p.status === "approved").length,
+        rejected: proposals.filter(p => p.status === "rejected").length,
     };
 
     return (
         <DashboardLayout>
-            {/* Header / Welcome Area */}
+            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+
                 <div>
+
                     <h1 className="text-2xl font-black text-slate-850 tracking-tight">
-                        Student Dashboard
+                        Welcome back, {profile ? profile.firstName : "Student"} 👋
                     </h1>
-                    <p className="text-slate-400 text-sm font-semibold mt-1">
-                        Track your academic proposal status and supervisor reviews
+
+                    <p className="text-slate-400 text-sm font-medium mt-1">
+
+                        Track your research proposal progress, milestones, and supervisor feedback.
+
                     </p>
+
                 </div>
+
                 <button
                     onClick={() => navigate("/student/new-proposal")}
                     className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-bold px-5 py-3 rounded-xl shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all text-sm cursor-pointer w-full sm:w-auto"
                 >
                     Start New Proposal
                 </button>
+
             </div>
 
             {/* Academic Calendar Progress */}
@@ -72,50 +80,50 @@ export default function StudentDashboard() {
 
             {/* Responsive Stats Cards Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                <StatCard 
-                    title="Total" 
-                    value={stats.total} 
+                <StatCard
+                    title="Total"
+                    value={stats.total}
                     icon={
                         <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
-                    } 
+                    }
                 />
-                <StatCard 
-                    title="Draft" 
-                    value={stats.draft} 
+                <StatCard
+                    title="Draft"
+                    value={stats.draft}
                     icon={
                         <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                    } 
+                    }
                 />
-                <StatCard 
-                    title="Submitted" 
-                    value={stats.submitted} 
+                <StatCard
+                    title="Submitted"
+                    value={stats.submitted}
                     icon={
                         <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                         </svg>
-                    } 
+                    }
                 />
-                <StatCard 
-                    title="Approved" 
-                    value={stats.approved} 
+                <StatCard
+                    title="Approved"
+                    value={stats.approved}
                     icon={
                         <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                    } 
+                    }
                 />
-                <StatCard 
-                    title="Rejected" 
-                    value={stats.rejected} 
+                <StatCard
+                    title="Rejected"
+                    value={stats.rejected}
                     icon={
                         <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                    } 
+                    }
                 />
             </div>
 
@@ -139,6 +147,11 @@ export default function StudentDashboard() {
                     </button>
                 </div>
             )}
+
+            <div className="mt-10">
+                <ProgressCoachCard />
+            </div>
         </DashboardLayout>
+
     );
 }

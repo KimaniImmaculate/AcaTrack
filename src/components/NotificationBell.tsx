@@ -20,6 +20,7 @@ interface Notification {
     title: string;
     message: string;
     proposalId?: string;
+    type?: string;
     read: boolean;
     createdAt?: any;
 
@@ -117,42 +118,50 @@ export default function NotificationBell() {
 
 
 
-
-
     const markRead = async (
         notification: Notification
     ) => {
 
-
         await updateDoc(
-
             doc(
                 db,
                 "notifications",
                 notification.id
             ),
-
             {
                 read: true
             }
-
         );
 
 
+        // Meeting request notification
+        if (
+            notification.type === "meeting_request" &&
+            role === "supervisor"
+        ) {
+
+            navigate("/supervisor/meeting-requests");
+
+            return;
+        }
+
+
+
+        // Normal proposal notifications
         if (notification.proposalId) {
 
-            // Route to the correct detail page based on the logged-in user's role
+
             const path =
                 role === "supervisor"
                     ? `/supervisor/proposals/${notification.proposalId}`
                     : role === "admin"
-                    ? `/admin/proposals/${notification.proposalId}`
-                    : `/student/proposals/${notification.proposalId}`;
+                        ? `/admin/proposals/${notification.proposalId}`
+                        : `/student/proposals/${notification.proposalId}`;
+
 
             navigate(path);
 
         }
-
 
     };
 
@@ -200,9 +209,8 @@ export default function NotificationBell() {
                                 <div
                                     key={notification.id}
                                     onClick={() => markRead(notification)}
-                                    className={`p-4 cursor-pointer text-left transition-colors duration-200 hover:bg-slate-50 ${
-                                        notification.read ? "bg-white" : "bg-amber-50/40"
-                                    }`}
+                                    className={`p-4 cursor-pointer text-left transition-colors duration-200 hover:bg-slate-50 ${notification.read ? "bg-white" : "bg-amber-50/40"
+                                        }`}
                                 >
                                     <div className="flex justify-between items-start gap-2">
                                         <p className="font-bold text-slate-800 text-xs sm:text-sm">
