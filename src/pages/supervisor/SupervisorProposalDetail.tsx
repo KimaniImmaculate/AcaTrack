@@ -1,5 +1,4 @@
 ﻿import { useEffect, useState } from "react";
-import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { db } from "../../services/firebase";
@@ -20,12 +19,22 @@ import {
     rejectProposal
 } from "../../services/proposalWorkflow";
 
+import {
+    doc,
+    onSnapshot,
+    getDoc,
+    collection,
+    query,
+    where,
+} from "firebase/firestore";
+
 export default function SupervisorProposalDetail() {
     const { user, profile } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [proposal, setProposal] = useState<Proposal | null>(null);
+    const [meeting, setMeeting] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [student, setStudent] = useState<UserProfile | null | "not_found">(null);
@@ -60,6 +69,29 @@ export default function SupervisorProposalDetail() {
             })
             .catch(() => setStudent("not_found"));
     }, [proposal?.studentId]);
+    useEffect(() => {
+        if (!proposal?.id) return;
+
+        const q = query(
+            collection(db, "meetingsRequests"),
+            where("proposalId", "==", proposal.id)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            if (!snapshot.empty) {
+                const meetingDoc = snapshot.docs[0];
+
+                setMeeting({
+                    id: meetingDoc.id,
+                    ...meetingDoc.data()
+                });
+            } else {
+                setMeeting(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [proposal?.id]);
 
     const actorDetails = {
         uid: user?.uid ?? "",
@@ -185,7 +217,94 @@ export default function SupervisorProposalDetail() {
                     </div>
                 </div>
 
+                {meeting?.status === "scheduled" && (
 
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-5 mt-6 space-y-4">
+
+
+                        <h3 className="font-bold text-green-700 text-lg">
+                            Supervision Meeting
+                        </h3>
+
+
+
+                        <p>
+                            <strong>Date:</strong>{" "}
+                            {meeting.requestedDate}
+                        </p>
+
+
+                        <p>
+                            <strong>Time:</strong>{" "}
+                            {meeting.requestedTime}
+                        </p>
+
+
+                        <p>
+                            <strong>Duration:</strong>{" "}
+                            {meeting.duration}
+                        </p>
+
+
+                        <p>
+                            <strong>Mode:</strong>{" "}
+                            {meeting.mode}
+                        </p>
+
+
+                        <p>
+                            <strong>Agenda:</strong>{" "}
+                            {meeting.agenda}
+                        </p>
+
+
+
+                        <p className="break-all">
+
+                            <strong>Meeting Link:</strong>{" "}
+
+                            <a
+
+                                href={meeting.meetingLink}
+
+                                target="_blank"
+
+                                rel="noopener noreferrer"
+
+                                className="text-blue-600 hover:underline"
+
+                            >
+
+                                {meeting.meetingLink}
+
+                            </a>
+
+
+                        </p>
+
+
+
+                        <a
+
+                            href={meeting.meetingLink}
+
+                            target="_blank"
+
+                            rel="noopener noreferrer"
+
+                            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold"
+
+                        >
+
+                            Join Meeting
+
+                        </a>
+
+
+
+                    </div>
+
+                )}
 
                 {/* Proposal Content */}
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-sm">

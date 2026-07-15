@@ -30,8 +30,9 @@ export interface MeetingRequest {
     | "pending"
     | "approved_waiting_link"
     | "scheduled"
+    | "completed"
+    | "cancelled"
     | "declined";
-
     createdAt?: any;
 
 }
@@ -101,123 +102,38 @@ export async function createMeetingRequest(
 // SUPERVISOR ACCEPTS REQUEST
 
 export async function acceptMeetingRequest(
-
     requestId: string,
-
     requestData: any,
-
     supervisorName: string
-
 ) {
 
-
-
     await updateDoc(
-
-        doc(
-            db,
-            "meetingRequests",
-            requestId
-        ),
-
+        doc(db, "meetingRequests", requestId),
         {
-
             status: "approved_waiting_link",
-
             updatedAt: serverTimestamp()
-
         }
-
     );
-
-
-
-
-
-    const meetingRef = await addDoc(
-
-        collection(db, "meetings"),
-
-        {
-
-
-            proposalId: requestData.proposalId,
-
-            studentId: requestData.studentId,
-
-            supervisorId: requestData.supervisorId,
-
-
-            title: requestData.title,
-
-            agenda: requestData.agenda,
-
-
-            date: requestData.requestedDate,
-
-            time: requestData.requestedTime,
-
-
-            duration: requestData.duration,
-
-            mode: requestData.mode,
-
-
-            meetingLink: "",
-
-
-            status: "approved_waiting_link",
-
-
-            createdAt: serverTimestamp()
-
-        }
-
-    );
-
-
-
 
 
     await createNotification(
-
         requestData.studentId,
-
         requestData.proposalId,
-
         "Meeting Approved",
-
         "Your supervisor approved the meeting request. Please add the meeting link.",
-
         "meeting_approved"
-
     );
-
-
-
 
 
     await createActivity(
-
         requestData.proposalId,
-
         "Supervisor approved the meeting request. Waiting for meeting link.",
-
         {
-
             uid: requestData.supervisorId,
-
             name: supervisorName,
-
             role: "supervisor"
-
         }
-
     );
-
-
-
-    return meetingRef.id;
 
 }
 
@@ -228,26 +144,19 @@ export async function acceptMeetingRequest(
 // STUDENT ADDS MEETING LINK
 
 export async function addMeetingLink(
-
-    meetingId: string,
-
+    meetingRequestId: string,
     meetingData: any,
-
     link: string,
-
     studentName: string
-
 ) {
 
 
     await updateDoc(
-
         doc(
             db,
-            "meetings",
-            meetingId
+            "meetingRequests",
+            meetingRequestId
         ),
-
         {
 
             meetingLink: link,
@@ -257,49 +166,27 @@ export async function addMeetingLink(
             updatedAt: serverTimestamp()
 
         }
-
     );
-
-
-
 
 
     await createNotification(
-
         meetingData.supervisorId,
-
         meetingData.proposalId,
-
         "Meeting Link Added",
-
-        `${studentName} added the meeting link for your supervision meeting.`,
-
+        `${studentName} added the meeting link.\n\n${link}`,
         "meeting_link_added"
-
     );
-
-
-
 
 
     await createActivity(
-
         meetingData.proposalId,
-
         "Student added the meeting link. Meeting is now scheduled.",
-
         {
-
             uid: meetingData.studentId,
-
             name: studentName,
-
             role: "student"
-
         }
-
     );
-
 
 }
 
@@ -380,6 +267,44 @@ export async function declineMeetingRequest(
 
         }
 
+    );
+
+}
+
+export async function completeMeeting(
+    meetingId: string,
+    meetingData: any,
+    supervisorName: string
+) {
+
+    await updateDoc(
+        doc(db, "meetingRequests", meetingId),
+        {
+            completedBy,
+            status: "completed",
+            completedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        }
+    );
+
+
+    await createNotification(
+        meetingData.studentId,
+        meetingData.proposalId,
+        "Meeting Completed",
+        "Your supervision meeting has been marked as completed.",
+        "meeting_completed"
+    );
+
+
+    await createActivity(
+        meetingData.proposalId,
+        "Supervisor marked the meeting as completed.",
+        {
+            uid: meetingData.supervisorId,
+            name: supervisorName,
+            role: "supervisor"
+        }
     );
 
 }

@@ -20,6 +20,7 @@ import { uploadProposalDocument } from "../../services/storageService";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import ActivityTimeline from "../../components/ActivityTimeline";
 import CommentsList from "../../components/CommentsList";
+import { addMeetingLink } from "../../services/meetingService";
 
 export default function ProposalDetail() {
     const { user, profile } = useAuth();
@@ -33,6 +34,7 @@ export default function ProposalDetail() {
     const [responseText, setResponseText] = useState("");
     const [editing, setEditing] = useState(false);
     const [meeting, setMeeting] = useState<any>(null);
+    const [meetingLink, setMeetingLink] = useState("");
 
     const [form, setForm] = useState({
         title: "",
@@ -90,6 +92,38 @@ export default function ProposalDetail() {
             .catch(() => setSupervisor("not_found"));
     }, [proposal?.supervisorId]);
 
+    useEffect(() => {
+
+        if (!proposal?.id) return;
+
+        const q = query(
+            collection(db, "meetingRequests"),
+            where("proposalId", "==", proposal.id)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+
+            if (!snapshot.empty) {
+
+                const meetingDoc = snapshot.docs[0];
+
+                setMeeting({
+                    id: meetingDoc.id,
+                    ...meetingDoc.data()
+                });
+
+            } else {
+
+                setMeeting(null);
+
+            }
+
+        });
+
+        return () => unsubscribe();
+
+    }, [proposal?.id]);
+
     const saveChanges = async () => {
         if (!proposal) return;
         setLoading(true);
@@ -138,48 +172,6 @@ export default function ProposalDetail() {
             </DashboardLayout>
         );
     }
-
-    useEffect(() => {
-
-        if (!proposal?.id) return;
-
-
-        const q = query(
-            collection(db, "meetings"),
-            where(
-                "proposalId",
-                "==",
-                proposal.id
-            )
-        );
-
-
-        const unsubscribe = onSnapshot(
-            q,
-            snapshot => {
-
-                if (!snapshot.empty) {
-
-                    const meetingDoc = snapshot.docs[0];
-
-                    setMeeting({
-                        id: meetingDoc.id,
-                        ...meetingDoc.data()
-                    });
-
-                } else {
-
-                    setMeeting(null);
-
-                }
-
-            }
-        );
-
-
-        return () => unsubscribe();
-
-    }, [proposal?.id]);
 
     return (
         <DashboardLayout>
@@ -264,74 +256,75 @@ export default function ProposalDetail() {
                                         </div>
 
 
-                                        {
-                                            !meeting &&
+                                        {!meeting && (
+                                            <button
+                                                onClick={() =>
+                                                    navigate(`/student/proposals/${proposal.id}/schedule`)
+                                                }
+                                                className="bg-amber-500 ..."
+                                            >
+                                                Schedule Meeting
+                                            </button>
+                                        )}
 
-                                            ["submitted", "approved", "revision_requested"]
-                                                .includes(proposal.status) && (
+                                        {meeting?.status === "pending" && (
+                                            <button
+                                                disabled
+                                                className="bg-slate-300 text-slate-600 px-5 py-2.5 rounded-xl cursor-not-allowed"
+                                            >
+                                                Meeting Request Sent
+                                            </button>
+                                        )}
+
+
+
+                                        {meeting?.status === "approved_waiting_link" && (
+                                            <div className="space-y-3">
+
+                                                <input
+                                                    type="url"
+                                                    placeholder="Paste Google Meet link"
+                                                    value={meetingLink}
+                                                    onChange={(e) => setMeetingLink(e.target.value)}
+                                                    className="border rounded-lg p-3 w-full"
+                                                />
 
                                                 <button
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/student/proposals/${proposal.id}/schedule`
-                                                        )
-                                                    }
-                                                    className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl"
+                                                    onClick={async () => {
+                                                        await addMeetingLink(
+                                                            meeting.id,
+                                                            meeting,
+                                                            meetingLink,
+                                                            `${profile?.firstName} ${profile?.lastName}`
+                                                        );
+                                                    }}
+                                                    className="bg-emerald-600 text-white px-5 py-2 rounded-lg"
                                                 >
-                                                    Schedule Meeting
+                                                    Submit Meeting Link
                                                 </button>
 
-                                            )
-                                        }
+                                            </div>
+                                        )}
 
 
+                                        {meeting?.status === "scheduled" && (
+                                            <div className="space-y-3">
 
-                                        {
-                                            meeting?.status === "approved_waiting_link" && (
-
-                                                <button
-
-                                                    onClick={() =>
-                                                        navigate(
-                                                            `/student/meetings/${meeting.id}/add-link`
-                                                        )
-                                                    }
-
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl"
-
-                                                >
-
-                                                    Add Meeting Link
-
-                                                </button>
-
-                                            )
-                                        }
-
-
-
-                                        {
-                                            meeting?.status === "scheduled" && (
+                                                <p className="text-green-600 font-bold">
+                                                    Meeting Scheduled
+                                                </p>
 
                                                 <a
-
                                                     href={meeting.meetingLink}
-
                                                     target="_blank"
-
                                                     rel="noopener noreferrer"
-
-                                                    className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl"
-
+                                                    className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg"
                                                 >
-
                                                     Join Meeting
-
                                                 </a>
 
-                                            )
-                                        }
-
+                                            </div>
+                                        )}
 
                                     </div>
 

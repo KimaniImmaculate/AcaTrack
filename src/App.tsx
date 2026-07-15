@@ -29,13 +29,12 @@ import Profile from "./pages/Profile";
 import Landing from "./pages/Landing";
 import ScheduleMeeting from "./pages/student/ScheduleMeeting";
 
-import StudentMeetings from "./pages/student/MyMeetings";
 
 import MeetingRequests from "./pages/supervisor/MeetingRequests";
-
-import SupervisorMeetings from "./pages/supervisor/MyMeetings";
-
 import AddMeetingLink from "./pages/student/AddMeetingLink";
+import Meetings from "./pages/shared/Meetings";
+import AdminMeetings from "./pages/admin/AdminMeetings";
+import AdminMeetingDetail from "./pages/admin/AdminMeetingDetail";
 
 /**
  * MAIN APPLICATION ROUTER
@@ -131,18 +130,21 @@ export default function App() {
 
         />
         <Route
-
           path="/student/meetings"
-
-          element={<StudentMeetings />}
-
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <Meetings />
+            </ProtectedRoute>
+          }
         />
+
         <Route
-
           path="/student/meetings/:meetingId/add-link"
-
-          element={<AddMeetingLink />}
-
+          element={
+            <ProtectedRoute allowedRoles={["student"]}>
+              <AddMeetingLink />
+            </ProtectedRoute>
+          }
         />
 
 
@@ -172,20 +174,20 @@ export default function App() {
           }
         />
         <Route
-
           path="/supervisor/meeting-requests"
-
-          element={<MeetingRequests />}
-
+          element={
+            <ProtectedRoute allowedRoles={["supervisor"]}>
+              <MeetingRequests />
+            </ProtectedRoute>
+          }
         />
-
-
         <Route
-
           path="/supervisor/meetings"
-
-          element={<SupervisorMeetings />}
-
+          element={
+            <ProtectedRoute allowedRoles={["supervisor"]}>
+              <Meetings />
+            </ProtectedRoute>
+          }
         />
 
 
@@ -272,6 +274,14 @@ export default function App() {
           }
         />
         <Route
+          path="/admin/meetings"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminMeetings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute
@@ -282,6 +292,14 @@ export default function App() {
               ]}
             >
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/meetings/:id"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminMeetingDetail />
             </ProtectedRoute>
           }
         />
