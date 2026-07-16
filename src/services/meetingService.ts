@@ -32,7 +32,13 @@ export interface MeetingRequest {
     | "scheduled"
     | "completed"
     | "cancelled"
-    | "declined";
+    | "declined"
+    | "rescheduled";
+    rescheduleDate?: string;
+    rescheduleTime?: string;
+    rescheduleReason?: string;
+    declineReason?: string;
+    cancelReason?: string;
     createdAt?: any;
 
 }
@@ -274,37 +280,121 @@ export async function declineMeetingRequest(
 export async function completeMeeting(
     meetingId: string,
     meetingData: any,
-    supervisorName: string
+    completedBy: string,
+    remarks?: string
 ) {
+    const updateData: any = {
+        status: "completed",
+        completedBy,
+        completedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+    };
+
+    if (remarks) {
+        updateData.remarks = remarks;
+    }
 
     await updateDoc(
         doc(db, "meetingRequests", meetingId),
-        {
-            completedBy,
-            status: "completed",
-            completedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-        }
+        updateData
     );
-
 
     await createNotification(
         meetingData.studentId,
         meetingData.proposalId,
         "Meeting Completed",
-        "Your supervision meeting has been marked as completed.",
+        remarks 
+            ? `Your supervision meeting has been marked as completed. Remarks: "${remarks}"`
+            : "Your supervision meeting has been marked as completed.",
         "meeting_completed"
     );
 
-
     await createActivity(
         meetingData.proposalId,
-        "Supervisor marked the meeting as completed.",
+        remarks 
+            ? `Supervisor marked the meeting as completed. Remarks: "${remarks}"`
+            : "Supervisor marked the meeting as completed.",
         {
             uid: meetingData.supervisorId,
-            name: supervisorName,
+            name: completedBy,
             role: "supervisor"
         }
     );
 
+}
+
+export async function rescheduleMeetingRequest(
+    requestId: string,
+    requestData: any,
+    rescheduleDate: string,
+    rescheduleTime: string,
+    reason: string,
+    supervisorName: string
+) {
+    await updateDoc(
+        doc(db, "meetingRequests", requestId),
+        {
+            status: "rescheduled",
+            rescheduleDate,
+            rescheduleTime,
+            rescheduleReason: reason,
+            updatedAt: serverTimestamp()
+        }
+    );
+
+    await createNotification(
+        requestData.studentId,
+        requestData.proposalId,
+        "Reschedule Suggested",
+        `Supervisor suggested rescheduling to ${rescheduleDate} at ${rescheduleTime}. Reason: ${reason}`,
+        "meeting_rescheduled"
+    );
+
+    await createActivity(
+        requestData.proposalId,
+        `Supervisor suggested rescheduling the meeting to ${rescheduleDate} at ${rescheduleTime}. Reason: ${reason}`,
+        {
+            uid: requestData.supervisorId,
+            name: supervisorName,
+            role: "supervisor"
+        }
+    );
+}
+
+export async function acceptRescheduledMeeting(
+    requestId: string,
+    requestData: any,
+    studentName: string
+) {
+    await updateDoc(
+        doc(db, "meetingRequests", requestId),
+        {
+            status: "approved_waiting_link",
+            requestedDate: requestData.rescheduleDate,
+            requestedTime: requestData.rescheduleTime,
+            // Clear rescheduling suggestions
+            rescheduleDate: "",
+            rescheduleTime: "",
+            rescheduleReason: "",
+            updatedAt: serverTimestamp()
+        }
+    );
+
+    await createNotification(
+        requestData.supervisorId,
+        requestData.proposalId,
+        "Reschedule Accepted",
+        `${studentName} accepted the proposed reschedule to ${requestData.rescheduleDate} at ${requestData.rescheduleTime}. Please wait for meeting link.`,
+        "reschedule_accepted"
+    );
+
+    await createActivity(
+        requestData.proposalId,
+        `Student accepted the proposed reschedule to ${requestData.rescheduleDate} at ${requestData.rescheduleTime}.`,
+        {
+            uid: requestData.studentId,
+            name: studentName,
+            role: "student"
+        }
+    );
 }

@@ -21,11 +21,13 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import ActivityTimeline from "../../components/ActivityTimeline";
 import CommentsList from "../../components/CommentsList";
 import { addMeetingLink } from "../../services/meetingService";
+import { useAcademicCalendar } from "../../hooks/useAcademicCalendar";
 
 export default function ProposalDetail() {
     const { user, profile } = useAuth();
     const { id } = useParams();
     const navigate = useNavigate();
+    const { calendar, loading: calLoading } = useAcademicCalendar();
 
     const [proposal, setProposal] = useState<Proposal | null>(null);
     const [loading, setLoading] = useState(true);
@@ -153,7 +155,10 @@ export default function ProposalDetail() {
         }
     };
 
-    if (loading) {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const isClosed = calendar && todayStr > calendar.proposalDueDate;
+
+    if (loading || calLoading) {
         return (
             <DashboardLayout>
                 <div className="p-6 text-center text-slate-400 font-semibold">
@@ -244,25 +249,36 @@ export default function ProposalDetail() {
                                     <div className="space-y-3">
 
                                         <div className="space-y-1.5">
-
                                             <p className="text-slate-800 font-bold">
                                                 {supervisor.firstName} {supervisor.lastName}
                                             </p>
-
                                             <p className="text-slate-500 text-xs font-medium">
                                                 {supervisor.department || "General Department"}
                                             </p>
-
+                                            {supervisor.email && (
+                                                <a
+                                                    href={`mailto:${supervisor.email}`}
+                                                    className="inline-flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-700 font-semibold transition-colors pt-0.5"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                                    </svg>
+                                                    {supervisor.email}
+                                                </a>
+                                            )}
                                         </div>
 
 
-                                        {!meeting && (
+                                        {!meeting && proposal.status !== "approved" && proposal.status !== "rejected" && (
                                             <button
                                                 onClick={() =>
                                                     navigate(`/student/proposals/${proposal.id}/schedule`)
                                                 }
-                                                className="bg-amber-500 ..."
+                                                className="w-full text-center bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-bold p-3 rounded-xl transition-all shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 hover:scale-[1.01] active:scale-[0.99] text-xs cursor-pointer flex items-center justify-center gap-1.5"
                                             >
+                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5" />
+                                                </svg>
                                                 Schedule Meeting
                                             </button>
                                         )}
@@ -390,7 +406,7 @@ export default function ProposalDetail() {
                     </h3>
 
                     <div className="flex gap-3 flex-wrap">
-                        {(proposal.status === "draft" || proposal.status === "revision_requested") && !editing && (
+                        {((proposal.status === "draft" && !isClosed) || proposal.status === "revision_requested") && !editing && (
                             <button
                                 onClick={() => setEditing(true)}
                                 className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md shadow-amber-500/10 hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
@@ -419,7 +435,7 @@ export default function ProposalDetail() {
                             </div>
                         )}
 
-                        {proposal.status === "draft" && !editing && (
+                        {proposal.status === "draft" && !editing && !isClosed && (
                             <button
                                 onClick={() => {
                                     if (!user) return;
@@ -433,6 +449,12 @@ export default function ProposalDetail() {
                             >
                                 Submit for Review
                             </button>
+                        )}
+
+                        {proposal.status === "draft" && isClosed && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs font-semibold text-amber-800">
+                                ⚠ The proposal submission deadline has passed. Draft submissions are disabled.
+                            </div>
                         )}
                     </div>
 
@@ -545,7 +567,7 @@ export default function ProposalDetail() {
                 {/* Comments & Activity Log Timelines */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <CommentsList proposalId={proposal.id} />
-                    <ActivityTimeline proposalId={proposal.id} />
+                    <ActivityTimeline proposalId={proposal.id} proposalTitle={proposal.title} />
                 </div>
             </div>
         </DashboardLayout>

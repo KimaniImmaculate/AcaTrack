@@ -1,10 +1,11 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 import { db } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { Proposal } from "../../types/Proposal";
+import { useAcademicCalendar } from "../../hooks/useAcademicCalendar";
 import StatusBadge from "../../components/StatusBadge";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import { statusMessages, statusColors } from "../../utils/statusIntelligence";
@@ -15,6 +16,7 @@ export default function Proposals() {
 
     const [proposals, setProposals] = useState<Proposal[]>([]);
     const [loading, setLoading] = useState(true);
+    const { calendar, loading: calLoading } = useAcademicCalendar();
 
     useEffect(() => {
         if (!user) {
@@ -40,7 +42,10 @@ export default function Proposals() {
         return () => unsubscribe();
     }, [user]);
 
-    if (loading) {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const isClosed = calendar && todayStr > calendar.proposalDueDate;
+
+    if (loading || calLoading) {
         return (
             <DashboardLayout>
                 <div className="p-6 text-center text-slate-400 font-semibold">
@@ -63,12 +68,22 @@ export default function Proposals() {
                             View, edit, and track status logs for all your research drafts
                         </p>
                     </div>
-                    <button
-                        onClick={() => navigate("/student/new-proposal")}
-                        className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap"
-                    >
-                        Create Proposal
-                    </button>
+                    {isClosed ? (
+                        <button
+                            disabled
+                            className="bg-slate-200 text-slate-400 font-semibold text-xs px-4 py-2.5 rounded-xl cursor-not-allowed opacity-60 whitespace-nowrap"
+                            title="Submission window is closed"
+                        >
+                            Submissions Closed
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => navigate("/student/new-proposal")}
+                            className="bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                        >
+                            Create Proposal
+                        </button>
+                    )}
                 </div>
 
                 {proposals.length === 0 ? (
@@ -79,13 +94,19 @@ export default function Proposals() {
                             </svg>
                         </div>
                         <p className="text-slate-500 font-semibold text-sm">No proposals created yet.</p>
-                        <p className="text-slate-400 text-xs mt-1 mb-5">Submit a new draft topic to begin your review loop.</p>
-                        <button
-                            onClick={() => navigate("/student/new-proposal")}
-                            className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer"
-                        >
-                            Create Your First Topic
-                        </button>
+                        {isClosed ? (
+                            <p className="text-slate-400 text-xs mt-1 mb-5">The submission deadline for new proposals has passed ({calendar ? new Date(calendar.proposalDueDate).toLocaleDateString() : ""}).</p>
+                        ) : (
+                            <>
+                                <p className="text-slate-400 text-xs mt-1 mb-5">Submit a new draft topic to begin your review loop.</p>
+                                <button
+                                    onClick={() => navigate("/student/new-proposal")}
+                                    className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer"
+                                >
+                                    Create Your First Topic
+                                </button>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div className="space-y-4">

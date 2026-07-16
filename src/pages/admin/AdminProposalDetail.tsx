@@ -169,7 +169,7 @@ export default function AdminProposalDetail() {
                 {/* Comments & Activity */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <CommentsList proposalId={proposal.id} />
-                    <ActivityTimeline proposalId={proposal.id} />
+                    <ActivityTimeline proposalId={proposal.id} proposalTitle={proposal.title} />
                 </div>
             </div>
         </DashboardLayout>

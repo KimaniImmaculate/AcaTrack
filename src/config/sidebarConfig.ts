@@ -18,8 +18,8 @@ export const sidebarConfig = {
         { label: "All Proposals", path: "/admin/proposals" },
         { label: "Users", path: "/admin/users" },
         { label: "Reports", path: "/admin/reports" },
+        { label: "Meetings", path: "/admin/meetings" },
         { label: "AI Insights", path: "/admin/ai-analytics" },
-        { label: "Meetings", path: "/admin/meetings" }
 
     ],
 };

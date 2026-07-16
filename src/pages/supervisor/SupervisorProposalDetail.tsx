@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { db } from "../../services/firebase";
@@ -418,7 +418,7 @@ export default function SupervisorProposalDetail() {
                 <hr className="my-8 border-slate-100" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <CommentsList proposalId={proposal.id} />
-                    <ActivityTimeline proposalId={proposal.id} />
+                    <ActivityTimeline proposalId={proposal.id} proposalTitle={proposal.title} />
                 </div>
                 <ReviewAssistantCard proposalId={proposal.id} />
 

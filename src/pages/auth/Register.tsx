@@ -267,7 +267,7 @@ export default function Register() {
                 <form onSubmit={handleRegister} className="space-y-4 pt-2">
 
                     {/* Role selector — shown first so prefix field can respond */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                                 I am a...
@@ -307,7 +307,7 @@ export default function Register() {
                     </div>
 
                     {/* Name fields */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                                 First Name
@@ -386,7 +386,7 @@ export default function Register() {
                     </div>
 
                     {/* School + Department */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
                                 School

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     collection,
     onSnapshot,
@@ -188,7 +188,7 @@ export default function SupervisorProposals() {
                                         </div>
 
                                         {/* Student info */}
-                                        <div className="mt-4 border-t border-slate-100 pt-4 grid grid-cols-2 gap-3 text-xs">
+                                        <div className="mt-4 border-t border-slate-100 pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                                             <div>
                                                 <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Student</span>
                                                 <p className="text-slate-700 font-semibold mt-0.5">

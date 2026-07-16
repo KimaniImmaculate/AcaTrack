@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import {
+    addDoc,
+    collection,
+    serverTimestamp,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-
 import { db } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSupervisors } from "../../hooks/useSupervisors";
+import { useDepartments } from "../../hooks/useDepartments";
+import { useAcademicCalendar } from "../../hooks/useAcademicCalendar";
 import { uploadProposalDocument } from "../../services/storageService";
 import DashboardLayout from "../../layouts/DashboardLayout";
 
 const inputClass =
     "w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-300 resize-none";
+
+const selectClass =
+    "w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-800 outline-none transition-all placeholder:text-slate-300 bg-white appearance-none pr-10 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_0.75rem_center] bg-[size:1.25rem_1.25rem] bg-no-repeat cursor-pointer";
 
 const labelClass =
     "block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5";
@@ -18,19 +26,21 @@ export default function NewProposal() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { supervisors } = useSupervisors();
+    const { departments } = useDepartments();
+    const { calendar, loading: calLoading } = useAcademicCalendar();
 
-    const [title,           setTitle]           = useState("");
-    const [abstract,        setAbstract]        = useState("");
-    const [problemStatement,setProblemStatement] = useState("");
-    const [objectives,      setObjectives]      = useState("");
-    const [methodology,     setMethodology]     = useState("");
+    const [title, setTitle] = useState("");
+    const [abstract, setAbstract] = useState("");
+    const [problemStatement, setProblemStatement] = useState("");
+    const [objectives, setObjectives] = useState("");
+    const [methodology, setMethodology] = useState("");
     const [expectedOutcome, setExpectedOutcome] = useState("");
-    const [department,      setDepartment]      = useState("");
-    const [supervisorId,    setSupervisorId]    = useState("");
+    const [department, setDepartment] = useState("");
+    const [supervisorId, setSupervisorId] = useState("");
 
-    const [file,    setFile]    = useState<File | null>(null);
+    const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
-    const [error,   setError]   = useState("");
+    const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,13 +62,13 @@ export default function NewProposal() {
                 methodology,
                 expectedOutcome,
                 department,
-                studentId:    user.uid,
+                studentId: user.uid,
                 supervisorId: supervisorId || null,
-                documentURL:  docUrl,
-                version:      1,
-                status:       "draft",
-                createdAt:    serverTimestamp(),
-                updatedAt:    serverTimestamp(),
+                documentURL: docUrl,
+                version: 1,
+                status: "draft",
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
             });
 
             navigate("/student/proposals");
@@ -78,47 +88,84 @@ export default function NewProposal() {
         value: string;
         setter: (v: string) => void;
     }[] = [
-        {
-            id: "abstract",
-            label: "Abstract",
-            hint: "2–4 sentence summary of your research",
-            placeholder: "Briefly describe what this research is about and what it aims to achieve…",
-            value: abstract,
-            setter: setAbstract,
-        },
-        {
-            id: "problemStatement",
-            label: "Problem Statement",
-            hint: "The core issue or gap this research addresses",
-            placeholder: "State the problem being investigated and why it matters…",
-            value: problemStatement,
-            setter: setProblemStatement,
-        },
-        {
-            id: "objectives",
-            label: "Research Objectives",
-            hint: "Key goals (a short bullet list is fine)",
-            placeholder: "e.g. To identify… To design… To evaluate…",
-            value: objectives,
-            setter: setObjectives,
-        },
-        {
-            id: "methodology",
-            label: "Methodology",
-            hint: "Approach / methods you plan to use",
-            placeholder: "e.g. Quantitative study using surveys, Python-based analysis…",
-            value: methodology,
-            setter: setMethodology,
-        },
-        {
-            id: "expectedOutcome",
-            label: "Expected Outcome",
-            hint: "What result or deliverable will this produce?",
-            placeholder: "e.g. A working system, a set of recommendations, a dataset…",
-            value: expectedOutcome,
-            setter: setExpectedOutcome,
-        },
-    ];
+            {
+                id: "abstract",
+                label: "Abstract",
+                hint: "2–4 sentence summary of your research",
+                placeholder: "Briefly describe what this research is about and what it aims to achieve…",
+                value: abstract,
+                setter: setAbstract,
+            },
+            {
+                id: "problemStatement",
+                label: "Problem Statement",
+                hint: "The core issue or gap this research addresses",
+                placeholder: "State the problem being investigated and why it matters…",
+                value: problemStatement,
+                setter: setProblemStatement,
+            },
+            {
+                id: "objectives",
+                label: "Research Objectives",
+                hint: "Key goals (a short bullet list is fine)",
+                placeholder: "e.g. To identify… To design… To evaluate…",
+                value: objectives,
+                setter: setObjectives,
+            },
+            {
+                id: "methodology",
+                label: "Methodology",
+                hint: "Approach / methods you plan to use",
+                placeholder: "e.g. Quantitative study using surveys, Python-based analysis…",
+                value: methodology,
+                setter: setMethodology,
+            },
+            {
+                id: "expectedOutcome",
+                label: "Expected Outcome",
+                hint: "What result or deliverable will this produce?",
+                placeholder: "e.g. A working system, a set of recommendations, a dataset…",
+                value: expectedOutcome,
+                setter: setExpectedOutcome,
+            },
+        ];
+
+
+
+
+    const todayStr = new Date().toISOString().split("T")[0];
+    const isClosed = calendar && todayStr > calendar.proposalDueDate;
+
+    if (!calLoading && isClosed) {
+        return (
+            <DashboardLayout>
+                <div className="max-w-3xl mx-auto space-y-6">
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center shadow-sm space-y-4">
+                        <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600">
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-lg font-bold text-slate-800">Proposal Submission Closed</h2>
+                        <p className="text-sm text-slate-500 max-w-md mx-auto">
+                            The deadline for submitting new research proposals was <span className="font-semibold text-slate-700">{new Date(calendar.proposalDueDate).toLocaleDateString("en-US", { day: 'numeric', month: 'long', year: 'numeric' })}</span>.
+                        </p>
+                        <p className="text-xs text-slate-400">
+                            If you already have a proposal that requires revision, you can resubmit it directly from the Proposal Details page.
+                        </p>
+                        <div className="pt-2">
+                            <button
+                                onClick={() => navigate("/student/proposals")}
+                                className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-6 py-2.5 rounded-xl shadow-md transition-all cursor-pointer"
+                            >
+                                Back to My Proposals
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>
@@ -157,32 +204,43 @@ export default function NewProposal() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            {/* Department */}
-                            <div>
-                                <label htmlFor="department" className={labelClass}>
-                                    Department <span className="text-rose-400">*</span>
-                                </label>
-                                <input
+                        <div>
+                            <label htmlFor="department" className={labelClass}>
+                                Department <span className="text-rose-400">*</span>
+                            </label>
+                            <div className="relative">
+                                <select
                                     id="department"
-                                    type="text"
-                                    className={inputClass}
-                                    placeholder="e.g. Computer Science"
+                                    className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl px-3 py-3 pr-10 text-sm text-slate-800 outline-none transition-all bg-white appearance-none cursor-pointer"
                                     value={department}
-                                    onChange={e => setDepartment(e.target.value)}
+                                    onChange={(e) => setDepartment(e.target.value)}
                                     required
-                                />
+                                >
+                                    <option value="">— Select Department —</option>
+                                    {departments.map((dept) => (
+                                        <option key={dept} value={dept}>
+                                            {dept}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 20 20">
+                                        <path d="M7 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
+                        </div>
 
-                            {/* Preferred Supervisor */}
-                            <div>
-                                <label htmlFor="supervisor" className={labelClass}>
-                                    Preferred Supervisor
-                                    <span className="ml-1 text-slate-300 normal-case font-normal">(optional)</span>
-                                </label>
+                        {/* Preferred Supervisor */}
+                        <div>
+                            <label htmlFor="supervisor" className={labelClass}>
+                                Preferred Supervisor
+                                <span className="ml-1 text-slate-300 normal-case font-normal">(optional)</span>
+                            </label>
+                            <div className="relative">
                                 <select
                                     id="supervisor"
-                                    className={`${inputClass} bg-white`}
+                                    className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl px-3 py-3 pr-10 text-sm text-slate-800 outline-none transition-all bg-white appearance-none cursor-pointer"
                                     value={supervisorId}
                                     onChange={e => setSupervisorId(e.target.value)}
                                 >
@@ -193,6 +251,11 @@ export default function NewProposal() {
                                         </option>
                                     ))}
                                 </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 20 20">
+                                        <path d="M7 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -235,11 +298,10 @@ export default function NewProposal() {
 
                         <label
                             htmlFor="docUpload"
-                            className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${
-                                file
-                                    ? "border-amber-400 bg-amber-50/30"
-                                    : "border-slate-200 hover:border-amber-400 hover:bg-amber-50/20"
-                            }`}
+                            className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-200 ${file
+                                ? "border-amber-400 bg-amber-50/30"
+                                : "border-slate-200 hover:border-amber-400 hover:bg-amber-50/20"
+                                }`}
                         >
                             <div className="flex flex-col items-center justify-center gap-2">
                                 {file ? (
