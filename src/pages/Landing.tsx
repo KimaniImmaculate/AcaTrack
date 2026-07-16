@@ -72,7 +72,7 @@ export default function Landing() {
     },
     {
       q: "Can I track my proposal's history?",
-      a: "Yes. AcaTrack maintains a full audit log including draft versions, supervisor comments, status updates, and historical revision logs."
+      a: "Yes. AcaTrack maintains a full audit log including draft versions, supervisor comments, status updates, and historical revision logs. You can also export the complete activity timeline as a styled HTML report."
     },
     {
       q: "What file formats are supported for submissions?",
@@ -81,6 +81,14 @@ export default function Landing() {
     {
       q: "Are email notifications supported?",
       a: "The system generates instant real-time in-app notifications whenever feedback is posted, status changes, or a supervisor is assigned. Email alerts can be configured in your settings."
+    },
+    {
+      q: "What happens when the proposal submission deadline passes?",
+      a: "Once the admin-configured due date passes, new draft submissions are automatically locked. Students with revision-requested proposals can still resubmit. Admins can extend the deadline at any time — changes take effect instantly for all users."
+    },
+    {
+      q: "Can supervisors leave feedback after a meeting?",
+      a: "Yes. When a supervisor marks a meeting as completed, they are prompted to enter session notes and remarks. These are stored in Firestore and displayed to both the student and the administrator in their respective meeting detail views."
     }
   ];
 
@@ -367,9 +375,48 @@ export default function Landing() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Admin Dashboard Reports</h3>
+            <h3 className="text-lg font-bold text-slate-900">Admin Dashboard & Reports</h3>
             <p className="text-slate-500 text-sm leading-relaxed">
-              Track university-wide student registrations, pending approvals, and active supervisor burdens. View progress stats at a glance.
+              Track university-wide registrations, pending approvals, and supervisor burdens with interactive donut charts and metric breakdowns.
+            </p>
+          </div>
+
+          {/* Card 4 */}
+          <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 space-y-4">
+            <div className="bg-blue-50 w-12 h-12 flex items-center justify-center rounded-xl text-blue-600">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Academic Calendar Enforcement</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Admins set submission windows. Once the deadline passes, new submissions are automatically locked — only revision resubmissions stay open. Deadlines are extendable in real time.
+            </p>
+          </div>
+
+          {/* Card 5 */}
+          <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 space-y-4">
+            <div className="bg-violet-50 w-12 h-12 flex items-center justify-center rounded-xl text-violet-600">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.82V15.18a1 1 0 01-1.447.891L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Meetings & Session Remarks</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Students schedule supervision meetings with video call links. Supervisors mark sessions complete and leave remarks — all stored and visible to the student and admin.
+            </p>
+          </div>
+
+          {/* Card 6 */}
+          <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 space-y-4">
+            <div className="bg-teal-50 w-12 h-12 flex items-center justify-center rounded-xl text-teal-600">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Exportable Activity Timeline</h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Every proposal carries a full audit trail. Download the activity timeline as a premium, print-ready HTML report — available to students, supervisors, and admins.
             </p>
           </div>
         </div>
@@ -484,6 +531,14 @@ export default function Landing() {
                   <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Re-submit revised drafts easily
                 </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Schedule supervision meetings
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Download full audit timeline reports
+                </li>
               </ul>
             </div>
             <Link
@@ -514,6 +569,14 @@ export default function Landing() {
                   <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Set review status recommendation
                 </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Accept, reschedule, or cancel meetings
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Leave session remarks after meetings
+                </li>
               </ul>
             </div>
             <Link
@@ -543,6 +606,14 @@ export default function Landing() {
                 <li className="flex items-center gap-2">
                   <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   Generate reports and metrics easily
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  Configure academic calendar & deadlines
+                </li>
+                <li className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  View all meetings and session remarks
                 </li>
               </ul>
             </div>
