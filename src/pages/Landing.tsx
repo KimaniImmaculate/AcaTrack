@@ -68,7 +68,7 @@ export default function Landing() {
   const faqs = [
     {
       q: "How does supervisor assignment work?",
-      a: "Administrators review the proposal abstract and select an appropriate supervisor from the relevant academic department. The system ensures workload balance among supervisors."
+      a: "Students have the leeway to choose their preferred supervisor during proposal submission. Administrators then confirm the choice or officially assign a supervisor to finalize the match."
     },
     {
       q: "Can I track my proposal's history?",
