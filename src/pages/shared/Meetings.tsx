@@ -55,7 +55,7 @@ export default function Meetings() {
                     const userSnap = await getDoc(doc(db, "users", id));
                     if (userSnap.exists()) {
                         const u = userSnap.data();
-                        setNames(prev => ({ ...prev, [id]: `${u.firstName} ${u.lastName}` }));
+                        setNames(prev => ({ ...prev, [id]: `${u.prefix ? `${u.prefix} ` : ""}${u.firstName} ${u.lastName}` }));
                     }
                 }
             }
@@ -86,7 +86,7 @@ export default function Meetings() {
     const handleComplete = async (meeting: any) => {
         const remarks = prompt("Enter remarks or notes about this meeting for the student (optional):") || "";
         try {
-            await completeMeeting(meeting.id, meeting, `${profile?.firstName} ${profile?.lastName}`, remarks);
+            await completeMeeting(meeting.id, meeting, `${profile?.prefix ? `${profile.prefix} ` : ""}${profile?.firstName} ${profile?.lastName}`, remarks);
         } catch (error) {
             console.error("Error completing meeting:", error);
         }

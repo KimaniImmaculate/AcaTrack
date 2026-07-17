@@ -69,7 +69,7 @@ function MeetingCard({ request }: { request: any }) {
     const [loading, setLoading] = useState(false);
     const [declined, setDeclined] = useState(false);
 
-    const supervisorName = `${profile?.firstName || ""} ${profile?.lastName || ""}`;
+    const supervisorName = `${profile?.prefix ? `${profile.prefix} ` : ""}${profile?.firstName || ""} ${profile?.lastName || ""}`.trim();
 
     const handleAccept = async () => {
         setLoading(true);

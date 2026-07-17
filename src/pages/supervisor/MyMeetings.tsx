@@ -180,7 +180,7 @@ export default function SupervisorMyMeetings() {
                                         )}
                                         {meeting.status === "scheduled" && (
                                             <button
-                                                onClick={() => completeMeeting(meeting.id, meeting, `${profile?.firstName} ${profile?.lastName}`)}
+                                                onClick={() => completeMeeting(meeting.id, meeting, `${profile?.prefix ? `${profile.prefix} ` : ""}${profile?.firstName} ${profile?.lastName}`)}
                                                 className="inline-flex items-center gap-2 border border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-800 text-sm font-bold px-5 py-2.5 rounded-xl transition-all cursor-pointer"
                                             >
                                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

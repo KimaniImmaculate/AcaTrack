@@ -73,7 +73,7 @@ export default function SupervisorProposals() {
 
     const actorDetails = {
         uid: user?.uid ?? "",
-        name: profile ? `${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
+        name: profile ? `${profile.prefix ? `${profile.prefix} ` : ""}${profile.firstName} ${profile.lastName}` : "Unknown Supervisor",
         role: "supervisor" as const
     };
 

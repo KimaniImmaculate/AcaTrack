@@ -250,7 +250,7 @@ export default function ProposalDetail() {
 
                                         <div className="space-y-1.5">
                                             <p className="text-slate-800 font-bold">
-                                                {supervisor.firstName} {supervisor.lastName}
+                                                {supervisor.prefix ? `${supervisor.prefix} ` : ""}{supervisor.firstName} {supervisor.lastName}
                                             </p>
                                             <p className="text-slate-500 text-xs font-medium">
                                                 {supervisor.department || "General Department"}

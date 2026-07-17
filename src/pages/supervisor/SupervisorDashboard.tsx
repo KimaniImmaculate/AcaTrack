@@ -59,7 +59,7 @@ export default function SupervisorDashboard() {
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
                         <h1 className="text-2xl font-black text-slate-850 tracking-tight">
-                            Welcome back, {profile ? `${profile.firstName}` : "Supervisor"} 👋
+                            Welcome back, {profile ? `${profile.prefix ? `${profile.prefix} ` : ""}${profile.firstName}` : "Supervisor"} 👋
                         </h1>
                         <p className="text-slate-400 text-sm font-medium mt-1">
                             Here's an overview of your assigned research proposals.

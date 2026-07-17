@@ -48,7 +48,7 @@ export default function AdminMeetings() {
                 const userSnap = await getDoc(doc(db, "users", id));
                 if (userSnap.exists()) {
                     const u = userSnap.data();
-                    setNames(prev => ({ ...prev, [id]: `${u.firstName} ${u.lastName}` }));
+                    setNames(prev => ({ ...prev, [id]: `${u.prefix ? `${u.prefix} ` : ""}${u.firstName} ${u.lastName}` }));
                 }
             }
         }
