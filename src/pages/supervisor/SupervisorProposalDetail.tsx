@@ -122,14 +122,8 @@ export default function SupervisorProposalDetail() {
     if (!proposal) {
         return (
             <DashboardLayout>
-                <div className="p-6 text-center space-y-4">
+                <div className="p-6 text-center">
                     <p className="text-red-500 font-semibold">Proposal not found.</p>
-                    <button
-                        onClick={() => navigate("/supervisor")}
-                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-5 py-2.5 rounded-xl cursor-pointer"
-                    >
-                        Back to Dashboard
-                    </button>
                 </div>
             </DashboardLayout>
         );
@@ -138,17 +132,6 @@ export default function SupervisorProposalDetail() {
     return (
         <DashboardLayout>
             <div className="max-w-4xl mx-auto space-y-8">
-
-                {/* Back link */}
-                <button
-                    onClick={() => navigate("/supervisor")}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to Dashboard
-                </button>
 
                 {/* Title Header Card */}
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     collection,
     onSnapshot,
@@ -118,51 +118,52 @@ export default function NotificationBell() {
 
 
 
-    const markRead = async (
-        notification: Notification
-    ) => {
+    const MEETING_TYPES = new Set([
+        "meeting_request",
+        "meeting_approved",
+        "meeting_link_added",
+        "meeting_declined",
+        "meeting_completed",
+        "meeting_rescheduled",
+        "reschedule_accepted",
+    ]);
+
+    const meetingsPath: Record<string, string> = {
+        student: "/student/meetings",
+        supervisor: "/supervisor/meetings",
+        admin: "/admin/meetings",
+    };
+
+    const markRead = async (notification: Notification) => {
+        setOpen(false);
 
         await updateDoc(
-            doc(
-                db,
-                "notifications",
-                notification.id
-            ),
-            {
-                read: true
-            }
+            doc(db, "notifications", notification.id),
+            { read: true }
         );
 
+        const r = role ?? "";
 
-        // Meeting request notification
-        if (
-            notification.type === "meeting_request" &&
-            role === "supervisor"
-        ) {
-
-            navigate("/supervisor/meeting-requests");
-
+        // Meeting notifications → meetings list for that role
+        if (MEETING_TYPES.has(notification.type ?? "")) {
+            navigate(meetingsPath[r] ?? `/${r}`);
             return;
         }
 
-
-
-        // Normal proposal notifications
+        // Proposal notifications → proposal detail page
         if (notification.proposalId) {
-
-
             const path =
-                role === "supervisor"
+                r === "supervisor"
                     ? `/supervisor/proposals/${notification.proposalId}`
-                    : role === "admin"
+                    : r === "admin"
                         ? `/admin/proposals/${notification.proposalId}`
                         : `/student/proposals/${notification.proposalId}`;
-
-
             navigate(path);
-
+            return;
         }
 
+        // Fallback → role dashboard
+        navigate(`/${r}`);
     };
 
 
