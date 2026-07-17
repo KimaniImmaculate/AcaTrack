@@ -80,7 +80,7 @@ export default function Landing() {
     },
     {
       q: "Are email notifications supported?",
-      a: "The system generates instant real-time in-app notifications whenever feedback is posted, status changes, or a supervisor is assigned. Email alerts can be configured in your settings."
+      a: "Yes! AcaTrack automatically sends real-time email notifications to students and supervisors whenever a proposal status changes (e.g. submitted, under review, revision requested, approved, or rejected) or when a meeting request status updates."
     },
     {
       q: "What happens when the proposal submission deadline passes?",

@@ -52,7 +52,7 @@ AcaTrack is a web-based platform that automates the submission, review, approval
 - Mobile-responsive layouts with off-canvas sidebar drawer
 - Login by email, admission number, or staff number
 - Supervisor title/prefix support (Dr., Prof., Mr., Mrs., etc.)
-- In-app real-time notifications
+- In-app real-time & email notifications
 
 
 
@@ -63,7 +63,37 @@ AcaTrack is a web-based platform that automates the submission, review, approval
 - Firebase (Authentication, Firestore, Storage, Hosting, Cloud Functions)
 - React Router
 
+## ⚡ Firebase Cloud Functions (Email Service)
 
+The email notification pipeline triggers automatically when notifications are created in the Firestore collection. Emails are built and sent via SMTP.
+
+To build and deploy the email service:
+
+1. Navigate to the `functions/` folder and install dependencies:
+   ```bash
+   cd functions
+   npm install
+   ```
+
+2. Compile TypeScript:
+   ```bash
+   npm run build
+   ```
+
+3. Configure SMTP secrets:
+   ```bash
+   firebase functions:secrets:set SMTP_HOST
+   firebase functions:secrets:set SMTP_PORT
+   firebase functions:secrets:set SMTP_USER
+   firebase functions:secrets:set SMTP_PASS
+   firebase functions:secrets:set CONTACT_FROM_EMAIL
+   firebase functions:secrets:set CONTACT_FROM_NAME
+   ```
+
+4. Deploy the functions:
+   ```bash
+   firebase deploy --only functions
+   ```
 
 ## 🎯 Goal
 
