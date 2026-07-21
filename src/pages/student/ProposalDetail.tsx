@@ -22,6 +22,8 @@ import ActivityTimeline from "../../components/ActivityTimeline";
 import CommentsList from "../../components/CommentsList";
 import { addMeetingLink } from "../../services/meetingService";
 import { useAcademicCalendar } from "../../hooks/useAcademicCalendar";
+import ProposalQualityCard from "../../ai/ProposalQualityCard";
+
 
 export default function ProposalDetail() {
     const { user, profile } = useAuth();
@@ -502,8 +504,12 @@ export default function ProposalDetail() {
                     )}
                 </div>
 
+                {/* AI Quality Assistant Card */}
+                <ProposalQualityCard proposal={proposal} />
+
                 {/* Form fields Details */}
                 <div className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-sm space-y-6">
+
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-4 mb-4">
                         Proposal Specifications
                     </h3>

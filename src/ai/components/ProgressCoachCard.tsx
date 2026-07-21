@@ -4,7 +4,11 @@ import { getProgressCoach } from "../services/progressCoach";
 
 import { ProgressCoach } from "../types";
 
-export default function ProgressCoachCard() {
+interface Props {
+    status?: string;
+}
+
+export default function ProgressCoachCard({ status }: Props) {
 
     const [coach, setCoach] =
         useState<ProgressCoach | null>(null);
@@ -14,7 +18,7 @@ export default function ProgressCoachCard() {
         async function load() {
 
             const result =
-                await getProgressCoach();
+                await getProgressCoach(status);
 
             setCoach(result);
 
@@ -22,7 +26,8 @@ export default function ProgressCoachCard() {
 
         load();
 
-    }, []);
+    }, [status]);
+
 
     if (!coach) {
 

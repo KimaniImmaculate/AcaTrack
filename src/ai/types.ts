@@ -118,3 +118,33 @@ export interface ProgressCoach {
     suggestions: string[];
 
 }
+
+/* ===========================
+   PROPOSAL QUALITY
+=========================== */
+
+export interface SectionQuality {
+
+    name: string;
+
+    status: "Good" | "Needs Work" | "Missing";
+
+    score: number;
+
+    feedback: string;
+
+}
+
+export interface ProposalQualityResult {
+
+    overallScore: number;
+
+    status: "Excellent" | "Good" | "Needs Improvement" | "Critical Issues";
+
+    sections: SectionQuality[];
+
+    suggestions: string[];
+
+    strengths: string[];
+
+}
