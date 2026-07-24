@@ -1,6 +1,7 @@
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { AIRecommendation } from "../types";
+import { generateAIRecommendationsWithGemini } from "./geminiService";
 
 export async function getAIRecommendations(): Promise<AIRecommendation[]> {
     try {
@@ -15,6 +16,19 @@ export async function getAIRecommendations(): Promise<AIRecommendation[]> {
             if (data.status === "under_review") overdueReviewCount++;
             if (data.status === "revision_requested") awaitingResubmissionCount++;
         });
+
+        try {
+            const geminiResult = await generateAIRecommendationsWithGemini({
+                unassignedCount,
+                overdueReviewCount,
+                awaitingResubmissionCount
+            });
+            if (geminiResult) {
+                return geminiResult;
+            }
+        } catch (geminiErr) {
+            console.warn("Gemini AI Recommendations failed, using fallback:", geminiErr);
+        }
 
         const recs: AIRecommendation[] = [];
 

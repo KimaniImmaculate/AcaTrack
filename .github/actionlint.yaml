@@ -1,0 +1,6 @@
+# actionlint configuration file to silence warnings about unknown secrets
+# https://github.com/rhysd/actionlint/blob/main/docs/config.md
+
+secrets:
+  - VITE_GEMINI_API_KEY
+  - FIREBASE_SERVICE_ACCOUNT

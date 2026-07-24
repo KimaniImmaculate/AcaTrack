@@ -149,7 +149,7 @@ export default function StudentDashboard() {
             )}
 
             <div className="mt-10">
-                <ProgressCoachCard />
+                <ProgressCoachCard status={proposals[0]?.status} />
             </div>
         </DashboardLayout>
 

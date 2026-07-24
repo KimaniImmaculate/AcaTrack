@@ -1,6 +1,7 @@
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { ReviewAssistant } from "../types";
+import { analyzeReviewWithGemini } from "./geminiService";
 
 export async function getReviewAssistant(
     proposalId?: string
@@ -15,11 +16,40 @@ export async function getReviewAssistant(
 
                 // Fetch comments to see supervisor feedback engagement
                 const commentsQuery = query(
-                    collection(db, "proposalComments"),
+                    collection(db, "comments"),
                     where("proposalId", "==", proposalId)
                 );
                 const commentsSnap = await getDocs(commentsQuery);
+                const commentsList = commentsSnap.docs.map(doc => {
+                    const cData = doc.data();
+                    return {
+                        authorRole: cData.authorRole || "unknown",
+                        authorName: cData.authorName || "Unknown",
+                        text: cData.text || ""
+                    };
+                });
                 const commentCount = commentsSnap.size;
+
+                try {
+                    const geminiResult = await analyzeReviewWithGemini(
+                        {
+                            title: data.title,
+                            abstract: data.abstract,
+                            problemStatement: data.problemStatement,
+                            objectives: data.objectives,
+                            methodology: data.methodology,
+                            expectedOutcome: data.expectedOutcome,
+                            version,
+                            status
+                        },
+                        commentsList
+                    );
+                    if (geminiResult) {
+                        return geminiResult;
+                    }
+                } catch (geminiErr) {
+                    console.warn("Gemini review analysis failed, using fallback:", geminiErr);
+                }
 
                 const score = Math.min(95, 70 + (version * 8) + (commentCount * 3));
 

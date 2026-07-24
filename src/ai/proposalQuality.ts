@@ -1,5 +1,6 @@
 import { ProposalQualityResult, SectionQuality } from "./types";
 import { Proposal } from "../types/Proposal";
+import { analyzeProposalWithGemini } from "./services/geminiService";
 
 export async function analyzeProposalQuality(
     proposal: Partial<Proposal> | {
@@ -12,6 +13,15 @@ export async function analyzeProposalQuality(
         documentURL?: string;
     }
 ): Promise<ProposalQualityResult> {
+    try {
+        const geminiResult = await analyzeProposalWithGemini(proposal);
+        if (geminiResult) {
+            return geminiResult;
+        }
+    } catch (err) {
+        console.warn("Gemini proposal quality analysis failed, falling back to heuristics:", err);
+    }
+
     const {
         title = "",
         abstract = "",
