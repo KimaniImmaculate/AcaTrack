@@ -14,7 +14,8 @@ export async function getProgressCoach(status?: string): Promise<ProgressCoach> 
                 "Schedule a kickoff meeting with your supervisor.",
                 "Export your activity timeline report for your thesis defense file.",
                 "Begin data collection & methodology execution."
-            ]
+            ],
+            source: "heuristic" as const
         };
     }
 
@@ -29,7 +30,8 @@ export async function getProgressCoach(status?: string): Promise<ProgressCoach> 
                 "Check the Supervisor Remarks in the Proposal Detail view.",
                 "Update your problem statement and methodology according to feedback.",
                 "Resubmit before the academic calendar due date."
-            ]
+            ],
+            source: "heuristic" as const
         };
     }
 
@@ -44,7 +46,8 @@ export async function getProgressCoach(status?: string): Promise<ProgressCoach> 
                 "Keep checking your in-app notifications.",
                 "Prepare preliminary research slides.",
                 "Schedule a follow-up supervision meeting if needed."
-            ]
+            ],
+            source: "heuristic" as const
         };
     }
 
@@ -59,6 +62,7 @@ export async function getProgressCoach(status?: string): Promise<ProgressCoach> 
             "Ensure your abstract is between 150 and 300 words.",
             "Clearly define 3 to 5 core research objectives.",
             "Attach your complete PDF/DOCX proposal file."
-        ]
+        ],
+        source: "heuristic" as const
     };
 }

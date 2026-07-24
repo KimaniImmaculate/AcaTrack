@@ -50,6 +50,15 @@ export default function ProposalQualityCard({ proposal }: ProposalQualityCardPro
                         ✨ AI Proposal Quality Card
                     </h2>
                     <p className="text-xs text-gray-500 mt-1">Automated structural & methodology evaluation</p>
+                    {quality.source === "gemini" ? (
+                        <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700 border border-violet-200">
+                            🤖 Gemini AI
+                        </span>
+                    ) : (
+                        <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                            ⚙ Smart Heuristic
+                        </span>
+                    )}
                 </div>
                 <div className={`px-3 py-1.5 rounded-xl border font-bold text-lg ${getScoreBadgeColor(quality.overallScore)}`}>
                     {quality.overallScore} / 100

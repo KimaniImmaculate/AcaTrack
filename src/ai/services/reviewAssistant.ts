@@ -45,7 +45,7 @@ export async function getReviewAssistant(
                         commentsList
                     );
                     if (geminiResult) {
-                        return geminiResult;
+                        return { ...geminiResult, source: "gemini" as const };
                     }
                 } catch (geminiErr) {
                     console.warn("Gemini review analysis failed, using fallback:", geminiErr);
@@ -71,7 +71,8 @@ export async function getReviewAssistant(
                         { title: "Methodology Soundness", status: version > 1 ? "completed" : "partial", comment: "Experimental steps defined." },
                         { title: "Literature Citations", status: "completed", comment: "Citations present and verified." },
                         { title: "Objectives Realism", status: "completed", comment: "3-5 measurable objectives." }
-                    ]
+                    ],
+                    source: "heuristic" as const
                 };
             }
         } catch (err) {
@@ -95,6 +96,7 @@ export async function getReviewAssistant(
             { title: "Expand Literature Review", status: "completed", comment: "Additional literature sections detected." },
             { title: "Add Citations", status: "completed", comment: "References increased from 12 to 16." },
             { title: "Update Objectives", status: "partial", comment: "Objectives clarified." }
-        ]
+        ],
+        source: "heuristic" as const
     };
 }

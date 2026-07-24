@@ -97,6 +97,8 @@ export interface ReviewAssistant {
 
     checks: ReviewCheck[];
 
+    source: "gemini" | "heuristic";
+
 }
 
 /* ===========================
@@ -116,6 +118,8 @@ export interface ProgressCoach {
     motivation: string;
 
     suggestions: string[];
+
+    source: "gemini" | "heuristic";
 
 }
 
@@ -146,5 +150,7 @@ export interface ProposalQualityResult {
     suggestions: string[];
 
     strengths: string[];
+
+    source: "gemini" | "heuristic";
 
 }

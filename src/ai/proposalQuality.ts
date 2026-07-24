@@ -16,7 +16,7 @@ export async function analyzeProposalQuality(
     try {
         const geminiResult = await analyzeProposalWithGemini(proposal);
         if (geminiResult) {
-            return geminiResult;
+            return { ...geminiResult, source: "gemini" as const };
         }
     } catch (err) {
         console.warn("Gemini proposal quality analysis failed, falling back to heuristics:", err);
@@ -153,6 +153,7 @@ export async function analyzeProposalQuality(
         status,
         sections,
         suggestions,
-        strengths
+        strengths,
+        source: "heuristic" as const
     };
 }

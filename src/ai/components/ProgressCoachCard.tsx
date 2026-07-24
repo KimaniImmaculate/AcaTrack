@@ -47,7 +47,7 @@ export default function ProgressCoachCard({ status }: Props) {
 
         <div className="bg-white rounded-xl shadow p-6 mb-8">
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
 
                 <div>
 
@@ -62,6 +62,16 @@ export default function ProgressCoachCard({ status }: Props) {
                         Smart insights to help you stay on track.
 
                     </p>
+
+                    {coach.source === "gemini" ? (
+                        <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700 border border-violet-200">
+                            🤖 Gemini AI
+                        </span>
+                    ) : (
+                        <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                            ⚙ Smart Heuristic
+                        </span>
+                    )}
 
                 </div>
 
