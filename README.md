@@ -1,16 +1,15 @@
-#  AcaTrack – Digital Research Proposal Management System
+# AcaTrack — Digital Research Proposal Management System
 
 AcaTrack is a web-based platform that automates the submission, review, approval, and tracking of research proposals in universities and research institutions.
 
-## 🌐 Live Demo
+## Live Demo
 
 **[https://acatrack.web.app](https://acatrack.web.app)**
 
-> Hosted on Firebase Hosting
+> Hosted on Firebase Hosting with CI/CD via GitHub Actions
 
 
-
-## ✨ Features
+## Features
 
 ### Proposal Lifecycle
 - Student proposal submission, editing, and version tracking
@@ -18,6 +17,13 @@ AcaTrack is a web-based platform that automates the submission, review, approval
 - Resubmission loop for revision-requested proposals
 - Real-time status updates (Draft → Under Review → Revision Requested → Approved / Rejected)
 - File uploads for research documents (PDF / DOCX)
+
+### AI Review Assistant (Gemini)
+- Supervisors get an AI-powered review suggestion panel on every proposal
+- Powered by Google Gemini — evaluates abstract, research area, and supervisor feedback
+- Proposal Quality Score card with actionable improvement suggestions
+- AI assistant integrates directly into the supervisor proposal detail view
+- Graceful fallback when the AI service is unavailable
 
 ### Academic Calendar Enforcement
 - Admin sets global submission start and due dates from the dashboard
@@ -53,17 +59,20 @@ AcaTrack is a web-based platform that automates the submission, review, approval
 - Login by email, admission number, or staff number
 - Supervisor title/prefix support (Dr., Prof., Mr., Mrs., etc.)
 - In-app real-time & email notifications
+- Styled form validation alerts with icons — no browser-native tooltips
+- Consistent icon system throughout (SVG inline icons, no emoji)
 
 
-
-## 🛠 Tech Stack
+## Tech Stack
 
 - React + TypeScript + Vite
-- Vanilla CSS + custom design tokens
+- Tailwind CSS v4 with custom design tokens
 - Firebase (Authentication, Firestore, Storage, Hosting, Cloud Functions)
-- React Router
+- React Router v6
+- Google Gemini API (AI Review Assistant)
 
-## ⚡ Firebase Cloud Functions (Email Service)
+
+## Firebase Cloud Functions (Email Service)
 
 The email notification pipeline triggers automatically when notifications are created in the Firestore collection. Emails are built and sent via SMTP.
 
@@ -95,6 +104,35 @@ To build and deploy the email service:
    firebase deploy --only functions
    ```
 
-## 🎯 Goal
+
+## Environment Variables
+
+Create a `.env` file in the project root with:
+
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_GEMINI_API_KEY=
+VITE_CONTACT_API_URL=
+```
+
+
+## Local Development
+
+```bash
+pnpm install
+pnpm dev
+```
+
+
+## Goal
 
 To streamline and digitize the research proposal lifecycle, improving transparency, efficiency, and collaboration in academic institutions.
+
+---
+
+Built by **Immaculate Kimani**
