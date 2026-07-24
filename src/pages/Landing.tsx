@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import Logo from "../components/Logo";
 
 export default function Landing() {
   const { user, role, loading } = useAuth();
@@ -167,16 +168,7 @@ export default function Landing() {
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-linear-to-tr from-amber-500 to-yellow-600 p-2 rounded-xl text-white shadow-md shadow-amber-500/20">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                {/* Graduation Cap Top */}
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 L21 7 L12 11 L3 7 Z" />
-                {/* Cap base */}
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 8.5 V12.5 C7 14.5, 17 14.5, 17 12.5 V8.5" />
-                {/* Chart track line with arrow */}
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 19 L10 14 L14 16 L19 11 M15 11 H19 V15" />
-              </svg>
-            </div>
+            <Logo size="md" />
             <span className="text-xl font-extrabold bg-linear-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent tracking-tight">
               AcaTrack
             </span>
@@ -762,13 +754,7 @@ export default function Landing() {
       <footer className="border-t border-slate-800 bg-slate-950 text-slate-400 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-2 text-white shadow-sm shadow-black/20">
-              <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 L21 7 L12 11 L3 7 Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 8.5 V12.5 C7 14.5, 17 14.5, 17 12.5 V8.5" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 19 L10 14 L14 16 L19 11 M15 11 H19 V15" />
-              </svg>
-            </div>
+            <Logo size="sm" variant="light" />
             <div>
               <div className="text-sm font-semibold text-slate-200">AcaTrack</div>
               <div className="text-xs text-slate-500">Digital research proposal management</div>

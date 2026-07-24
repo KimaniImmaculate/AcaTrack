@@ -4,6 +4,7 @@ import { doc, updateDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { createNotification } from "../../services/notifications";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import FormAlert from "../../components/FormAlert";
 
 export default function AddMeetingLink() {
     const { meetingId } = useParams();
@@ -102,11 +103,7 @@ export default function AddMeetingLink() {
                 )}
 
                 {/* Error */}
-                {error && (
-                    <p className="text-sm text-rose-600 font-semibold bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
-                        {error}
-                    </p>
-                )}
+                <FormAlert message={error} />
 
                 {/* Actions */}
                 <div className="flex items-center gap-4">

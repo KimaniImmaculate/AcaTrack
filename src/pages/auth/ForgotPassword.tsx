@@ -3,6 +3,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
 
 import { auth } from "../../services/firebase";
+import FormAlert from "../../components/FormAlert";
 
 export default function ForgotPassword() {
     const navigate = useNavigate();
@@ -13,17 +14,17 @@ export default function ForgotPassword() {
 
     const handleReset = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError("");
         setSuccess("");
 
+        const email = identifier.trim();
+        if (!email) {
+            setError("Please enter your email address.");
+            return;
+        }
+
+        setLoading(true);
         try {
-            const email = identifier.trim();
-
-            if (!email) {
-                throw new Error("Please enter your email address.");
-            }
-
             await sendPasswordResetEmail(auth, email);
             setSuccess(`Reset link sent to ${email}. Check your inbox and spam folder.`);
         } catch (err: any) {
@@ -73,17 +74,8 @@ export default function ForgotPassword() {
                         />
                     </div>
 
-                    {error && (
-                        <div className="bg-rose-50 border border-rose-100 text-rose-600 text-xs font-semibold p-3.5 rounded-xl">
-                            {error}
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold p-3.5 rounded-xl">
-                            {success}
-                        </div>
-                    )}
+                    <FormAlert message={error} />
+                    <FormAlert message={success} variant="success" />
 
                     <button
                         disabled={loading}

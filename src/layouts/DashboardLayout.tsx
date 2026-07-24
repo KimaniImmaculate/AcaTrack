@@ -6,6 +6,7 @@ import { auth } from "../services/firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { sidebarConfig } from "../config/sidebarConfig";
 import NotificationBell from "../components/NotificationBell";
+import Logo from "../components/Logo";
 
 export default function DashboardLayout({
     children,
@@ -45,20 +46,8 @@ export default function DashboardLayout({
     const SidebarContent = () => (
         <div className="flex flex-col h-full">
             {/* Logo */}
-            <div
-                className="flex items-center gap-2.5 mb-8 px-2 cursor-pointer"
-                onClick={() => navigate("/")}
-            >
-                <div className="bg-gradient-to-tr from-amber-500 to-yellow-600 p-1.5 rounded-lg text-white shadow-md shadow-amber-500/10">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 L21 7 L12 11 L3 7 Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 8.5 V12.5 C7 14.5, 17 14.5, 17 12.5 V8.5" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 19 L10 14 L14 16 L19 11 M15 11 H19 V15" />
-                    </svg>
-                </div>
-                <span className="text-lg font-black bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent tracking-tight">
-                    AcaTrack
-                </span>
+            <div className="mb-8 flex justify-center cursor-pointer" onClick={() => navigate("/")}>
+                <Logo variant="light" size="md" />
             </div>
 
             {/* Profile Card */}

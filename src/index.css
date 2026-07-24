@@ -12,3 +12,8 @@ body {
 h1, h2, h3, .font-cursive {
   font-family: var(--font-display);
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

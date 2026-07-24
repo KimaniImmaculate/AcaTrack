@@ -4,10 +4,11 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { Link, useNavigate } from "react-router-dom";
 
 import { auth, db } from "../../services/firebase";
+import Logo from "../../components/Logo";
+import FormAlert from "../../components/FormAlert";
 
 export default function Login() {
     const navigate = useNavigate();
-
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -16,8 +17,19 @@ export default function Login() {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError("");
+
+        // Custom validation — show styled error instead of browser native tooltip
+        if (!identifier.trim()) {
+            setError("Please enter your email, admission number, or staff number.");
+            return;
+        }
+        if (!password) {
+            setError("Please enter your password.");
+            return;
+        }
+
+        setLoading(true);
 
         let targetEmail = identifier.trim();
 
@@ -101,16 +113,9 @@ export default function Login() {
                 <div className="text-center space-y-2">
                     <div 
                         onClick={() => navigate("/")} 
-                        className="mx-auto bg-linear-to-tr from-amber-500 to-yellow-600 p-2.5 rounded-2xl text-white shadow-md shadow-amber-500/20 w-fit cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+                        className="flex justify-center cursor-pointer hover:opacity-90 active:scale-95 transition-transform"
                     >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            {/* Graduation Cap Top */}
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 L21 7 L12 11 L3 7 Z" />
-                            {/* Cap base */}
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 8.5 V12.5 C7 14.5, 17 14.5, 17 12.5 V8.5" />
-                            {/* Chart track line with arrow */}
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 19 L10 14 L14 16 L19 11 M15 11 H19 V15" />
-                        </svg>
+                        <Logo size="lg" />
                     </div>
                     <h1 className="text-2xl font-black text-slate-850 tracking-tight mt-3">
                         Welcome to AcaTrack
@@ -131,7 +136,6 @@ export default function Login() {
                             className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-855 outline-none transition-all placeholder:text-slate-300"
                             value={identifier}
                             onChange={(e) => setIdentifier(e.target.value)}
-                            required
                         />
                     </div>
 
@@ -146,7 +150,6 @@ export default function Login() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 pr-12 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                required
                             />
                             <button
                                 type="button"
@@ -180,11 +183,7 @@ export default function Login() {
                         </p>
                     </div>
 
-                    {error && (
-                        <div className="bg-rose-50 border border-rose-100 text-rose-600 text-xs font-semibold p-3.5 rounded-xl">
-                            {error}
-                        </div>
-                    )}
+                    <FormAlert message={error} />
 
                     <button
                         disabled={loading}

@@ -6,6 +6,7 @@ import {
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { db } from "../../services/firebase";
+import FormAlert from "../../components/FormAlert";
 import { useAuth } from "../../contexts/AuthContext";
 import { useSupervisors } from "../../hooks/useSupervisors";
 import { useDepartments } from "../../hooks/useDepartments";
@@ -343,11 +344,7 @@ export default function NewProposal() {
                     </div>
 
                     {/* Error */}
-                    {error && (
-                        <p className="text-sm text-rose-600 font-semibold bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
-                            {error}
-                        </p>
-                    )}
+                    <FormAlert message={error} />
 
                     {/* Actions */}
                     <div className="flex items-center gap-4">

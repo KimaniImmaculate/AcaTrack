@@ -19,6 +19,8 @@ import {
     Link
 } from "react-router-dom";
 
+import FormAlert from "../../components/FormAlert";
+
 
 export default function Register() {
 
@@ -94,8 +96,31 @@ export default function Register() {
 
         e.preventDefault();
 
-        setLoading(true);
         setError("");
+
+        // Custom validation — styled errors instead of browser tooltip
+        if (!firstName.trim() || !lastName.trim()) {
+            setError("Please enter your first and last name.");
+            return;
+        }
+        if (!email.trim()) {
+            setError("Please enter your email address.");
+            return;
+        }
+        if (!password) {
+            setError("Please enter a password.");
+            return;
+        }
+        if (role === "student" && !admissionNumber.trim()) {
+            setError("Please enter your admission number.");
+            return;
+        }
+        if (role === "supervisor" && !staffNumber.trim()) {
+            setError("Please enter your staff number.");
+            return;
+        }
+
+        setLoading(true);
 
 
 
@@ -317,7 +342,6 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
-                                required
                             />
                         </div>
                         <div>
@@ -329,7 +353,6 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
-                                required
                             />
                         </div>
                     </div>
@@ -359,7 +382,6 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 pr-12 text-sm text-slate-855 outline-none transition-all placeholder:text-slate-300"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                required
                             />
                             <button
                                 type="button"
@@ -396,7 +418,6 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
                                 value={school}
                                 onChange={(e) => setSchool(e.target.value)}
-                                required
                             />
                         </div>
 
@@ -409,7 +430,6 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-855 outline-none transition-all placeholder:text-slate-300"
                                 value={department}
                                 onChange={(e) => setDepartment(e.target.value)}
-                                required
                             />
                         </div>
                     </div>
@@ -424,7 +444,6 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
                                 value={admissionNumber}
                                 onChange={(e) => setAdmissionNumber(e.target.value)}
-                                required
                             />
                         </div>
                     )}
@@ -439,16 +458,11 @@ export default function Register() {
                                 className="w-full border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 rounded-xl p-3 text-sm text-slate-850 outline-none transition-all placeholder:text-slate-300"
                                 value={staffNumber}
                                 onChange={(e) => setStaffNumber(e.target.value)}
-                                required
                             />
                         </div>
                     )}
 
-                    {error && (
-                        <div className="bg-rose-50 border border-rose-100 text-rose-600 text-xs font-semibold p-3.5 rounded-xl">
-                            {error}
-                        </div>
-                    )}
+                    <FormAlert message={error} />
 
                     <button
                         disabled={loading}
