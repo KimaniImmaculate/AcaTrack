@@ -385,14 +385,20 @@ export default function SupervisorProposalDetail() {
                     )}
 
                     {proposal.status === "approved" && (
-                        <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4 text-sm font-semibold text-emerald-700">
-                            ✓ This proposal has been approved.
+                        <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-4 text-sm font-semibold text-emerald-700 flex items-center gap-2">
+                            <svg className="w-5 h-5 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            This proposal has been approved.
                         </div>
                     )}
 
                     {proposal.status === "rejected" && (
-                        <div className="bg-red-50/60 border border-red-100 rounded-xl p-4 text-sm font-semibold text-red-700">
-                            ✗ This proposal has been rejected.
+                        <div className="bg-red-50/60 border border-red-100 rounded-xl p-4 text-sm font-semibold text-red-700 flex items-center gap-2">
+                            <svg className="w-5 h-5 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            This proposal has been rejected.
                         </div>
                     )}
                 </div>

@@ -65,12 +65,19 @@ export default function ReviewAssistantCard({
                     </p>
 
                     {review.source === "gemini" ? (
-                        <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700 border border-violet-200">
-                            🤖 Gemini AI
+                        <span className="inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700 border border-violet-200">
+                            <svg className="w-3 h-3 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Gemini AI
                         </span>
                     ) : (
-                        <span className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                            ⚙ Smart Heuristic
+                        <span className="inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                            <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Smart Heuristic
                         </span>
                     )}
 
@@ -210,14 +217,16 @@ export default function ReviewAssistantCard({
 
                                 </span>
 
-                                <span>
-
-                                    {check.status === "completed" && "🟢"}
-
-                                    {check.status === "partial" && "🟡"}
-
-                                    {check.status === "missing" && "🔴"}
-
+                                <span className="flex items-center gap-1">
+                                    {check.status === "completed" && (
+                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-xs" title="Completed" />
+                                    )}
+                                    {check.status === "partial" && (
+                                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-xs" title="Partial" />
+                                    )}
+                                    {check.status === "missing" && (
+                                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shadow-xs" title="Missing" />
+                                    )}
                                 </span>
 
                             </div>

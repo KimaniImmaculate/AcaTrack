@@ -6,7 +6,7 @@ export async function getProgressCoach(status?: string): Promise<ProgressCoach> 
     if (s === "approved") {
         return {
             progress: 100,
-            currentStage: "Proposal Approved 🎉",
+            currentStage: "Proposal Approved",
             estimatedCompletion: "Completed",
             nextMilestone: "Commence Primary Research Phase",
             motivation: "Congratulations! Your proposal has passed departmental review.",

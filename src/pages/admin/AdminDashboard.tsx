@@ -127,7 +127,7 @@ export default function AdminDashboard() {
                     <div>
                         <p className="text-[11px] font-bold text-amber-500 uppercase tracking-widest mb-1">Admin Portal</p>
                         <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-                            Welcome back{profile ? `, ${profile.firstName}` : ""} 👋
+                            Welcome back{profile ? `, ${profile.firstName}` : ""}
                         </h1>
                         <p className="text-slate-400 text-sm font-medium mt-1">
                             System-wide overview — users, proposals, meetings & workflows.
@@ -270,7 +270,12 @@ export default function AdminDashboard() {
                                     </p>
                                 )}
                                 {!calOpen && !calendar && (
-                                    <p className="text-xs text-amber-500 font-semibold mt-0.5">⚠ No calendar configured yet</p>
+                                    <p className="text-xs text-amber-500 font-semibold mt-0.5 flex items-center gap-1">
+                                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        No calendar configured yet
+                                    </p>
                                 )}
                             </div>
                         </div>

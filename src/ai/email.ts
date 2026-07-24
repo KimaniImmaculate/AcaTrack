@@ -61,11 +61,11 @@ export function generateAIEmailContent(payload: AIEmailPayload): AIEmailTemplate
 
         case "proposal_approved":
             return {
-                subject: `🎉 [AcaTrack] Congratulations! Proposal Approved: "${title}"`,
+                subject: `[AcaTrack] Congratulations! Proposal Approved: "${title}"`,
                 bodyText: `Hello ${recipientName},\n\nGreat news! Your research proposal "${title}" has been formally APPROVED by your supervisor.\n\nYou may now proceed to the next phase of your academic research.`,
                 bodyHtml: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                        <h2 style="color: #059669;">🎉 Proposal Approved!</h2>
+                        <h2 style="color: #059669;">Proposal Approved!</h2>
                         <p>Hello <strong>${recipientName}</strong>,</p>
                         <p>Your research proposal <strong>"${title}"</strong> has been officially <strong>APPROVED</strong>.</p>
                         <p>An official activity log entry and timeline audit record have been registered in AcaTrack.</p>

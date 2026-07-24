@@ -1,21 +1,29 @@
 import { ProposalQualityResult } from "../types";
 
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-flash-latest";
 
+/**
+ * Calls the Gemini API matching Google AI Studio's official cURL specification:
+ * Header: X-goog-api-key: <KEY>
+ */
 export async function callGeminiAPI(prompt: string): Promise<string | null> {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
+    const credential = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!credential) {
+        console.warn("VITE_GEMINI_API_KEY is not set.");
         return null;
     }
 
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-goog-api-key": credential,
+    };
 
     try {
         const response = await fetch(endpoint, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers,
             body: JSON.stringify({
                 contents: [
                     {
@@ -32,7 +40,8 @@ export async function callGeminiAPI(prompt: string): Promise<string | null> {
         });
 
         if (!response.ok) {
-            console.warn(`Gemini API returned HTTP status ${response.status}`);
+            const errBody = await response.text();
+            console.warn(`Gemini API returned HTTP ${response.status}:`, errBody);
             return null;
         }
 
